@@ -11,11 +11,8 @@ export default defineConfig({
             logo: {
                 src: './src/assets/logo.svg',
             },
-            editLink: {
-                baseUrl: 'https://github.com/vector-skylence/skylence/edit/main/github-pages/',
-            },
             social: [
-                { icon: 'github', label: 'GitHub', href: 'https://github.com/vector-skylence/skylence' },
+                { icon: 'github', label: 'GitHub', href: 'https://github.com/skylence-be/skylence' },
             ],
             sidebar: [
                 { label: 'Introduction', slug: 'index' },
