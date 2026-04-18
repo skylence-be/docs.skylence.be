@@ -23,6 +23,9 @@ importers:
       starlight-links-validator:
         specifier: ^0.23.0
         version: 0.23.0(@astrojs/starlight@0.38.3(astro@6.1.7(@types/node@24.12.2)(rollup@4.60.1)(typescript@6.0.3)(yaml@2.8.3)))(astro@6.1.7(@types/node@24.12.2)(rollup@4.60.1)(typescript@6.0.3)(yaml@2.8.3))
+      starlight-package-managers:
+        specifier: ^0.12.0
+        version: 0.12.0(@astrojs/starlight@0.38.3(astro@6.1.7(@types/node@24.12.2)(rollup@4.60.1)(typescript@6.0.3)(yaml@2.8.3)))
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1744,6 +1747,12 @@ packages:
     peerDependencies:
       '@astrojs/starlight': '>=0.38.0'
       astro: '>=6.0.0'
+
+  starlight-package-managers@0.12.0:
+    resolution: {integrity: sha512-hAIVzOT0/Git+T2Uwckh2rs51fYiDM6/X+Z2f3LtKMSwOwm+nSUAX2Ilp7k+07LDtxYjmvfTCxhfIBt0PgOF5g==}
+    engines: {node: '>=18.17.1'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.22.0'
 
   stream-replace-string@2.0.0:
     resolution: {integrity: sha512-TlnjJ1C0QrmxRNrON00JvaFFlNh5TTG00APw23j74ET7gkQpTASi6/L2fuiav8pzK715HXtUeClpBTw2NPSn6w==}
@@ -4439,6 +4448,10 @@ snapshots:
       yaml: 2.8.3
     transitivePeerDependencies:
       - supports-color
+
+  starlight-package-managers@0.12.0(@astrojs/starlight@0.38.3(astro@6.1.7(@types/node@24.12.2)(rollup@4.60.1)(typescript@6.0.3)(yaml@2.8.3))):
+    dependencies:
+      '@astrojs/starlight': 0.38.3(astro@6.1.7(@types/node@24.12.2)(rollup@4.60.1)(typescript@6.0.3)(yaml@2.8.3))
 
   stream-replace-string@2.0.0: {}
 
