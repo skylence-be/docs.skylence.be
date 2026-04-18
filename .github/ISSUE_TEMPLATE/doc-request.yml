@@ -1,0 +1,31 @@
+name: Documentation Request
+description: Request new documentation for a topic
+labels: [documentation, enhancement]
+body:
+  - type: textarea
+    id: topic
+    attributes:
+      label: Topic
+      placeholder: What should be documented?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this needed?
+      description: What are you trying to accomplish that you cannot find docs for?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: section
+    attributes:
+      label: Suggested Section
+      options:
+        - Getting Started
+        - CLI
+        - Configuration
+        - Workflow Format
+        - Architecture
+        - Other
