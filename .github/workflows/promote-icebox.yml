@@ -12,15 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
+        env:
+          PROJECT_ID: ${{ vars.PROJECT_ID }}
+          STATUS_FIELD_ID: ${{ vars.STATUS_FIELD_ID }}
+          BACKLOG_OPTION_ID: ${{ vars.BACKLOG_OPTION_ID }}
+          IDEA_STAGE_FIELD: ${{ vars.IDEA_STAGE_FIELD }}
+          BUG_STAGE_FIELD: ${{ vars.BUG_STAGE_FIELD }}
         with:
           github-token: ${{ secrets.PROJECT_PAT }}
           script: |
-            const PROJECT_ID        = 'PVT_kwDODV_QK84BU-ZD';
-            const STATUS_FIELD_ID   = 'PVTSSF_lADODV_QK84BU-ZDzhPUz6E';
-            const BACKLOG_OPTION_ID = '7a931ac2';
-            const IDEA_STAGE_FIELD  = 'PVTSSF_lADODV_QK84BU-ZDzhPeDOY';
-            const BUG_STAGE_FIELD   = 'PVTSSF_lADODV_QK84BU-ZDzhPoEAg';
-
+            const { PROJECT_ID, STATUS_FIELD_ID, BACKLOG_OPTION_ID, IDEA_STAGE_FIELD, BUG_STAGE_FIELD } = process.env;
             const WATCHED_FIELDS = new Set([IDEA_STAGE_FIELD, BUG_STAGE_FIELD]);
 
             const { payload } = context;
@@ -66,7 +67,6 @@ jobs:
 
             if (!isIceboxPromotion && !isBugPromotion) return;
 
-            // Set Status = Backlog
             await github.graphql(`
               mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                 updateProjectV2ItemFieldValue(input: {
@@ -76,7 +76,6 @@ jobs:
               }
             `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: STATUS_FIELD_ID, optionId: BACKLOG_OPTION_ID });
 
-            // Clear the stage field that triggered the promotion
             const clearFieldId = isIceboxPromotion ? IDEA_STAGE_FIELD : BUG_STAGE_FIELD;
             await github.graphql(`
               mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!) {
@@ -86,14 +85,12 @@ jobs:
               }
             `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: clearFieldId });
 
-            // Remove relevant label
-            const labelToRemove = isIceboxPromotion ? 'icebox' : null;
-            if (labelToRemove && issue.labels.nodes.some(l => l.name === labelToRemove)) {
+            if (isIceboxPromotion && issue.labels.nodes.some(l => l.name === 'icebox')) {
               await github.rest.issues.removeLabel({
                 owner: issue.repository.owner.login,
                 repo: issue.repository.name,
                 issue_number: issue.number,
-                name: labelToRemove
+                name: 'icebox'
               });
             }
 
