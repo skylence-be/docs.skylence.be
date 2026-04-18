@@ -15,13 +15,17 @@ jobs:
         with:
           github-token: ${{ secrets.PROJECT_PAT }}
           script: |
-            const IDEA_STAGE_FIELD_ID = 'PVTSSF_lADODV_QK84BU-ZDzhPeDOY';
-            const PROJECT_ID          = 'PVT_kwDODV_QK84BU-ZD';
-            const STATUS_FIELD_ID     = 'PVTSSF_lADODV_QK84BU-ZDzhPUz6E';
-            const BACKLOG_OPTION_ID   = '7a931ac2';
+            const PROJECT_ID        = 'PVT_kwDODV_QK84BU-ZD';
+            const STATUS_FIELD_ID   = 'PVTSSF_lADODV_QK84BU-ZDzhPUz6E';
+            const BACKLOG_OPTION_ID = '7a931ac2';
+            const IDEA_STAGE_FIELD  = 'PVTSSF_lADODV_QK84BU-ZDzhPeDOY';
+            const BUG_STAGE_FIELD   = 'PVTSSF_lADODV_QK84BU-ZDzhPoEAg';
+
+            const WATCHED_FIELDS = new Set([IDEA_STAGE_FIELD, BUG_STAGE_FIELD]);
 
             const { payload } = context;
-            if (payload.changes?.field_value?.field_node_id !== IDEA_STAGE_FIELD_ID) return;
+            const changedField = payload.changes?.field_value?.field_node_id;
+            if (!WATCHED_FIELDS.has(changedField)) return;
 
             const itemNodeId = payload.projects_v2_item.node_id;
 
@@ -33,13 +37,14 @@ jobs:
                       nodes {
                         ... on ProjectV2ItemFieldSingleSelectValue {
                           name
-                          field { ... on ProjectV2SingleSelectField { name } }
+                          field { ... on ProjectV2SingleSelectField { id name } }
                         }
                       }
                     }
                     content {
                       ... on Issue {
                         number
+                        labels(first: 20) { nodes { name } }
                         repository { name owner { login } }
                       }
                     }
@@ -48,13 +53,20 @@ jobs:
               }
             `, { id: itemNodeId });
 
-            const ideaStage = node.fieldValues.nodes.find(v => v.field?.name === 'Idea Stage');
-            if (ideaStage?.name !== 'Promotable') return;
-
             const issue = node.content;
             if (!issue) return;
             if (issue.repository.name !== context.repo.repo || issue.repository.owner.login !== context.repo.owner) return;
 
+            const fieldValues = node.fieldValues.nodes;
+            const ideaStage = fieldValues.find(v => v.field?.name === 'Idea Stage');
+            const bugStage  = fieldValues.find(v => v.field?.name === 'Bug Stage');
+
+            const isIceboxPromotion = changedField === IDEA_STAGE_FIELD && ideaStage?.name === 'Promotable';
+            const isBugPromotion    = changedField === BUG_STAGE_FIELD  && bugStage?.name  === 'Prioritized';
+
+            if (!isIceboxPromotion && !isBugPromotion) return;
+
+            // Set Status = Backlog
             await github.graphql(`
               mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
                 updateProjectV2ItemFieldValue(input: {
@@ -64,19 +76,26 @@ jobs:
               }
             `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: STATUS_FIELD_ID, optionId: BACKLOG_OPTION_ID });
 
+            // Clear the stage field that triggered the promotion
+            const clearFieldId = isIceboxPromotion ? IDEA_STAGE_FIELD : BUG_STAGE_FIELD;
             await github.graphql(`
               mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!) {
                 clearProjectV2ItemFieldValue(input: {
                   projectId: $projectId, itemId: $itemId, fieldId: $fieldId
                 }) { projectV2Item { id } }
               }
-            `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: IDEA_STAGE_FIELD_ID });
+            `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: clearFieldId });
 
-            await github.rest.issues.removeLabel({
-              owner: issue.repository.owner.login,
-              repo: issue.repository.name,
-              issue_number: issue.number,
-              name: 'icebox'
-            });
+            // Remove relevant label
+            const labelToRemove = isIceboxPromotion ? 'icebox' : null;
+            if (labelToRemove && issue.labels.nodes.some(l => l.name === labelToRemove)) {
+              await github.rest.issues.removeLabel({
+                owner: issue.repository.owner.login,
+                repo: issue.repository.name,
+                issue_number: issue.number,
+                name: labelToRemove
+              });
+            }
 
-            core.info(`Promoted ${issue.repository.name}#${issue.number} to Backlog`);
+            const kind = isIceboxPromotion ? 'idea' : 'bug';
+            core.info(`Promoted ${kind} ${issue.repository.name}#${issue.number} to Backlog`);
