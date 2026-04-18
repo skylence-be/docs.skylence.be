@@ -1,0 +1,38 @@
+name: Documentation Issue
+description: Report incorrect, outdated, or missing content
+labels: [documentation]
+body:
+  - type: input
+    id: page_url
+    attributes:
+      label: Page URL
+      placeholder: "https://docs.skylence.be/getting-started/..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      options:
+        - Incorrect information
+        - Outdated content
+        - Missing content
+        - Broken link
+        - Typo / grammar
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What is wrong?
+      placeholder: Describe the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Fix
+      placeholder: How should it read?
