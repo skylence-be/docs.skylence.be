@@ -1,11 +1,14 @@
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLinksValidator from 'starlight-links-validator';
 
 export default defineConfig({
     site: 'https://docs.skylence.be',
     integrations: [
         starlight({
+            favicon: '/favicon.svg',
+            plugins: [starlightLinksValidator()],
             title: 'Skylence',
             description: 'Claude Code Harness — documentation',
             logo: {
