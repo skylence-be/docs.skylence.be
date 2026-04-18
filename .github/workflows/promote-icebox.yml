@@ -1,0 +1,82 @@
+name: Promote Icebox to Backlog
+
+on:
+  projects_v2_item:
+    types: [edited]
+
+permissions:
+  issues: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_PAT }}
+          script: |
+            const IDEA_STAGE_FIELD_ID = 'PVTSSF_lADODV_QK84BU-ZDzhPeDOY';
+            const PROJECT_ID          = 'PVT_kwDODV_QK84BU-ZD';
+            const STATUS_FIELD_ID     = 'PVTSSF_lADODV_QK84BU-ZDzhPUz6E';
+            const BACKLOG_OPTION_ID   = '7a931ac2';
+
+            const { payload } = context;
+            if (payload.changes?.field_value?.field_node_id !== IDEA_STAGE_FIELD_ID) return;
+
+            const itemNodeId = payload.projects_v2_item.node_id;
+
+            const { node } = await github.graphql(`
+              query($id: ID!) {
+                node(id: $id) {
+                  ... on ProjectV2Item {
+                    fieldValues(first: 20) {
+                      nodes {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                          name
+                          field { ... on ProjectV2SingleSelectField { name } }
+                        }
+                      }
+                    }
+                    content {
+                      ... on Issue {
+                        number
+                        repository { name owner { login } }
+                      }
+                    }
+                  }
+                }
+              }
+            `, { id: itemNodeId });
+
+            const ideaStage = node.fieldValues.nodes.find(v => v.field?.name === 'Idea Stage');
+            if (ideaStage?.name !== 'Promotable') return;
+
+            const issue = node.content;
+            if (!issue) return;
+            if (issue.repository.name !== context.repo.repo || issue.repository.owner.login !== context.repo.owner) return;
+
+            await github.graphql(`
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId, itemId: $itemId, fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) { projectV2Item { id } }
+              }
+            `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: STATUS_FIELD_ID, optionId: BACKLOG_OPTION_ID });
+
+            await github.graphql(`
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!) {
+                clearProjectV2ItemFieldValue(input: {
+                  projectId: $projectId, itemId: $itemId, fieldId: $fieldId
+                }) { projectV2Item { id } }
+              }
+            `, { projectId: PROJECT_ID, itemId: itemNodeId, fieldId: IDEA_STAGE_FIELD_ID });
+
+            await github.rest.issues.removeLabel({
+              owner: issue.repository.owner.login,
+              repo: issue.repository.name,
+              issue_number: issue.number,
+              name: 'icebox'
+            });
+
+            core.info(`Promoted ${issue.repository.name}#${issue.number} to Backlog`);
