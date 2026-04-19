@@ -1,63 +1,38 @@
 ---
 title: Download
-description: Installeer de Skylence-binary — vooraf gebouwde releases, zelf-update en checksum-verificatie.
+description: Installeer de Skylence-binary met één commando. Checksum-geverifieerd, zelf-updatend.
 ---
 
-import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Skylence wordt geleverd als één statische binary genaamd `sky`. Hij draait als lokale daemon op je eigen machine — geen account, geen cloud.
 
-## Vooraf gebouwde binaries
+## Installeren
 
-Elke release op GitHub publiceert binaries voor macOS en Linux, zowel amd64 als arm64.
-
-<Tabs>
-    <TabItem label="macOS (arm64)">
-        ```sh
-        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-arm64.tar.gz
-        tar -xzf sky.tar.gz
-        sudo mv sky /usr/local/bin/sky
-        sky --version
-        ```
-    </TabItem>
-    <TabItem label="macOS (amd64)">
-        ```sh
-        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-amd64.tar.gz
-        tar -xzf sky.tar.gz
-        sudo mv sky /usr/local/bin/sky
-        sky --version
-        ```
-    </TabItem>
-    <TabItem label="Linux (arm64)">
-        ```sh
-        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-arm64.tar.gz
-        tar -xzf sky.tar.gz
-        sudo mv sky /usr/local/bin/sky
-        sky --version
-        ```
-    </TabItem>
-    <TabItem label="Linux (amd64)">
-        ```sh
-        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-amd64.tar.gz
-        tar -xzf sky.tar.gz
-        sudo mv sky /usr/local/bin/sky
-        sky --version
-        ```
-    </TabItem>
-</Tabs>
-
-Bekijk alle releases en kies een specifieke versie op [github.com/skylence-be/skylence/releases](https://github.com/skylence-be/skylence/releases).
-
-## Controleer de download
-
-Elke release bevat een `checksums.txt`-bestand met SHA-256-hashes voor alle archieven.
+Eén commando. Detecteert automatisch je OS en architectuur, verifieert de checksum, installeert naar `/usr/local/bin/sky`.
 
 ```sh
-curl -L -O https://github.com/skylence-be/skylence/releases/latest/download/checksums.txt
-shasum -a 256 -c checksums.txt --ignore-missing
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install.sh | sh
 ```
 
-De regel voor jouw archief moet eindigen op `OK`. Zo niet: stop en download opnieuw — voer de binary niet uit.
+Daarna:
+
+```sh
+sky --version
+sky setup
+```
+
+### Installer-opties
+
+```sh
+# Pin op een specifieke release
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install.sh | sh -s -- --version v0.1.1
+
+# Installeer naar een eigen map (geen sudo nodig)
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install.sh | sh -s -- --dir ~/.local/bin
+```
+
+De installer ondersteunt macOS en Linux op zowel amd64 als arm64.
 
 ## Zelf-update
 
@@ -70,7 +45,53 @@ sky update --to v0.2.0  # pin op een specifieke tag (rollback of reproduceerbare
 sky update -y           # installeer zonder bevestiging (CI, scripts)
 ```
 
-Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten — installeer eerst een release-binary via één van de opties hierboven.
+Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten — installeer eerst een release-binary via de installer hierboven.
+
+## Handmatig installeren
+
+Als je liever geen script in `sh` pipet, download dan het archief voor je platform direct.
+
+<Tabs>
+    <TabItem label="macOS (arm64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-arm64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        ```
+    </TabItem>
+    <TabItem label="macOS (amd64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-amd64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        ```
+    </TabItem>
+    <TabItem label="Linux (arm64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-arm64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        ```
+    </TabItem>
+    <TabItem label="Linux (amd64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-amd64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        ```
+    </TabItem>
+</Tabs>
+
+Controleer de checksum (aanbevolen):
+
+```sh
+curl -L -O https://github.com/skylence-be/skylence/releases/latest/download/checksums.txt
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+De regel voor jouw archief moet eindigen op `OK`. Zo niet: stop en download opnieuw — voer de binary niet uit.
+
+Bekijk alle releases op [github.com/skylence-be/skylence/releases](https://github.com/skylence-be/skylence/releases).
 
 ## Volgende stap
 
