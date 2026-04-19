@@ -193,14 +193,3 @@ sky webhook delete --repo owner/naam [--token <token>]
 
 Verwijdert de webhook van GitHub.
 
----
-
-## sky sentry
-
-Test de Sentry-integratie voor foutrapportage.
-
-```sh
-sky sentry test
-```
-
-Verstuurt een testevent naar de geconfigureerde `sentry_dsn`. Vereist dat `sentry_dsn` is ingesteld in de configuratie. Sluit af met niet-nul als de DSN ontbreekt of de verzending mislukt.

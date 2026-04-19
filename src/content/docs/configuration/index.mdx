@@ -51,8 +51,6 @@ update_check_on_start: true
 | `shutdown_timeout` | `SKY_SHUTDOWN_TIMEOUT` | `30` |
 | `update_check_on_start` | `SKY_UPDATE_CHECK_ON_START` | `false` |
 | `monthly_budget_usd` | — | |
-| `sentry_dsn` | `SKY_SENTRY_DSN` | |
-| `sentry_environment` | `SKY_SENTRY_ENVIRONMENT` | `development` |
 
 ## TLS
 
@@ -71,14 +69,6 @@ bridge_tls_key_file: "/etc/sky/tls/key.pem"
 ## Rate limiting
 
 Per-IP token bucket applied independently to API, webhook, and WebSocket endpoints. Set RPS to `0` or less to disable that limiter. Burst must be `>= 1` when RPS is positive.
-
-## Sentry
-
-Set `sentry_dsn` to enable error reporting. Panics from HTTP handlers, tracked goroutines, and unhandled command errors report to Sentry. Test with:
-
-```sh
-sky sentry test
-```
 
 ## Metrics
 

@@ -51,8 +51,6 @@ update_check_on_start: true
 | `shutdown_timeout` | `SKY_SHUTDOWN_TIMEOUT` | `30` |
 | `update_check_on_start` | `SKY_UPDATE_CHECK_ON_START` | `false` |
 | `monthly_budget_usd` | — | |
-| `sentry_dsn` | `SKY_SENTRY_DSN` | |
-| `sentry_environment` | `SKY_SENTRY_ENVIRONMENT` | `development` |
 
 ## TLS
 
@@ -71,14 +69,6 @@ bridge_tls_key_file: "/etc/sky/tls/key.pem"
 ## Snelheidsbeperking
 
 Per-IP token bucket, afzonderlijk toegepast op API-, webhook- en WebSocket-eindpunten. Stel RPS in op `0` of minder om die limiter uit te schakelen. Burst moet `>= 1` zijn wanneer RPS positief is.
-
-## Sentry
-
-Stel `sentry_dsn` in om foutrapportage te activeren. Panics van HTTP-handlers, bijgehouden goroutines en onbehandelde commandofouten worden gerapporteerd aan Sentry. Test met:
-
-```sh
-sky sentry test
-```
 
 ## Metrics
 

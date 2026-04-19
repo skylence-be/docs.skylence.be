@@ -63,6 +63,11 @@ export default defineConfig({
                     translations: { nl: 'Architectuur' },
                     autogenerate: { directory: 'architecture' },
                 },
+                {
+                    label: 'Error Codes',
+                    translations: { nl: 'Foutcodes' },
+                    autogenerate: { directory: 'error-codes' },
+                },
             ],
         }),
     ],

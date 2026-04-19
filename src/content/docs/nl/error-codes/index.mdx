@@ -1,0 +1,229 @@
+---
+title: Foutcodes
+description: Alle SKY-* foutcodes met oorzaken en oplossingen.
+---
+
+Elke niet-triviale fout in Skylence heeft een gestructureerde code. Codes verschijnen in logs, CLI-uitvoer en WebSocket-events als `[SKY-XX-NNN] bericht`.
+
+## Domeinen
+
+| Prefix | Domein |
+|--------|--------|
+| `SKY-WF-*` | Workflow — parseren, valideren, DAG, lint |
+| `SKY-RUN-*` | Runner — uitvoering, stappen, budget |
+| `SKY-WH-*` | Webhooks — ontvangst, handtekening, routing |
+| `SKY-DB-*` | Database — SQLite-opslag |
+| `SKY-CL-*` | Claude CLI — subproces, streaming |
+| `SKY-CFG-*` | Configuratie — laden, parseren, valideren |
+| `SKY-CLN-*` | Clone — git-operaties |
+| `SKY-AUTH-*` | Authenticatie / autorisatie |
+| `SKY-WS-*` | WebSocket — verbindingen, abonnementen |
+| `SKY-API-*` | REST API — verzoekvalidatie |
+
+---
+
+## SKY-WF — Workflow
+
+Gegenereerd door `sky lint` en de workflow-loader. Los deze op voordat een run start.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-WF-001` | Workflow-parsefout |
+| `SKY-WF-002` | Validatie mislukt — ontbrekende naam, lege stappen, etc. |
+| `SKY-WF-003` | Workflownaam niet gevonden |
+| `SKY-WF-004` | Kan workflowmap of -bestand niet lezen |
+| `SKY-WF-005` | DAG bevat een cyclus |
+| `SKY-WF-006` | Workflow heeft geen stappen of nodes |
+| `SKY-WF-007` | `.sky`-sectieformaatfout — niet gesloten scheidingsteken, zwevende prompt, geneste sectie, misvormd markering of naamconflict |
+| `SKY-WF-010` | Commando-`.md`-bestand niet gevonden in `.sky/commands/` |
+| `SKY-WF-011` | Commando-bestand parsefout |
+| `SKY-WF-012` | Commando-bestand heeft geen prompttekst |
+| `SKY-WF-020` | Dubbel node-ID in de workflow |
+| `SKY-WF-021` | `depends_on` verwijst naar een onbekende node |
+| `SKY-WF-022` | Node heeft geen actie — vereist één van `prompt`, `command`, `bash`, `http` of `eval` |
+| `SKY-WF-023` | Node is afhankelijk van zichzelf |
+| `SKY-WF-024` | Node heeft meer dan één uitvoeringssoort ingesteld |
+| `SKY-WF-030` | Ongeldige `$node.output`-verwijzing |
+| `SKY-WF-031` | Kan `when`-conditie-expressie niet parseren |
+| `SKY-WF-032` | Ongeldige `trigger_rule`-waarde |
+| `SKY-WF-033` | Ongeldige `output_style`-waarde |
+| `SKY-WF-034` | `http`-node: `url` is vereist |
+| `SKY-WF-035` | `eval`-node: `source` is vereist |
+| `SKY-WF-036` | `eval`-node: precies één bewering vereist (`contains`, `matches` of `equals`) |
+| `SKY-WF-037` | `loop`-body kan geen `http`-, `eval`- of `wait`-node zijn |
+| `SKY-WF-038` | `loop.until` vereist precies één van `bash` of `eval` |
+| `SKY-WF-039` | `wait.channel` is geen geldige waarde |
+| `SKY-WF-040` | `wait.timeout` is geen geldige duur |
+| `SKY-WF-041` | `chain_from` is alleen geldig op `prompt`- of `command`-nodes |
+| `SKY-WF-042` | `chain_from`-doel staat niet in `depends_on` |
+| `SKY-WF-043` | `chain_from`-doel is geen `prompt`- of `command`-node |
+| `SKY-WF-044` | Workflow overschrijdt het maximale aantal nodes (256) |
+| `SKY-WF-045` | JSON Schema-validatiefout |
+| `SKY-WF-046` | `loop.max` overschrijdt de toegestane limiet |
+| `SKY-WF-047` | Kale `{{var}}` in een JSON-stringliteraal in `http.body` — gebruik `{{var\|json}}` |
+| `SKY-WF-048` | Bash-sink (`eval`/`source`/`bash -c`) ontvangt `$SKY_OUTPUT_<prompt-node>` — command injection-risico |
+| `SKY-WF-049` | `mcp_servers`-entry heeft ongeldige vorm — ontbreekt `command`, `url` of `type` |
+| `SKY-WF-050` | `mcp_servers`-naam botst met een beheerde server |
+| `SKY-WF-051` | `isolation` heeft een niet-ondersteunde waarde |
+
+---
+
+## SKY-RUN — Runner
+
+Gegenereerd tijdens workflowuitvoering.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-RUN-001` | Kan run-record niet aanmaken in de database |
+| `SKY-RUN-002` | Run is geannuleerd |
+| `SKY-RUN-003` | Run overschreed de maximale looptijd |
+| `SKY-RUN-010` | Kan stap-record niet aanmaken |
+| `SKY-RUN-011` | Stapuitvoering mislukt |
+| `SKY-RUN-012` | Stap overschreed de tijdslimiet |
+| `SKY-RUN-013` | Stap overgeslagen — `when`-conditie was onwaar of `trigger_rule` niet voldaan |
+| `SKY-RUN-020` | DAG-node-uitvoering mislukt |
+| `SKY-RUN-021` | DAG-conditiebeoordeling mislukt |
+| `SKY-RUN-022` | Node overgeslagen vanwege `trigger_rule` |
+| `SKY-RUN-023` | DAG heeft onoplosbare afhankelijkheden tijdens uitvoering |
+| `SKY-RUN-030` | Bash-node-uitvoering mislukt |
+| `SKY-RUN-031` | Bash-node overschreed de tijdslimiet |
+| `SKY-RUN-032` | Bash-node is afgesloten met een niet-nul exitcode |
+| `SKY-RUN-040` | Kan gestructureerde output niet vastleggen |
+| `SKY-RUN-041` | Output voldoet niet aan het `output_format`-schema |
+| `SKY-RUN-050` | HTTP-node verzoek mislukt |
+| `SKY-RUN-051` | HTTP-responsestatus niet in het verwachte bereik |
+| `SKY-RUN-060` | `eval`-bewering mislukt — run gestopt |
+| `SKY-RUN-070` | `loop` bereikte `max` iteraties zonder dat de conditie slaagde |
+| `SKY-RUN-080` | `wait`-node time-out voor ontvangst van hervatsignaal |
+| `SKY-RUN-081` | Hervatting aangeroepen maar geen overeenkomende `wait`-node gevonden |
+| `SKY-RUN-082` | `wait`-node afgewezen door de goedkeurder |
+| `SKY-RUN-090` | Nodekosten overschreden `max_budget_usd` |
+| `SKY-RUN-091` | Workflowrunkosten overschreden de workflow-bestedingslimiet |
+| `SKY-RUN-092` | Maandelijkse bestedingslimiet bereikt — run geweigerd voor aanvang |
+
+---
+
+## SKY-WH — Webhooks
+
+Gegenereerd tijdens webhook-ontvangst.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-WH-001` | HMAC-handtekeningverificatie mislukt — controleer `SKY_GITHUB_SECRET` |
+| `SKY-WH-002` | Payload parsefout |
+| `SKY-WH-003` | Ontbrekende `X-GitHub-Event`-header |
+| `SKY-WH-004` | Geen workflows komen overeen met dit event |
+| `SKY-WH-005` | Webhook-snelheidslimiet overschreden |
+| `SKY-WH-006` | Payload overschrijdt de groottelimiet |
+| `SKY-WH-007` | Verzoektijdstempel te oud — mogelijke replay-aanval |
+| `SKY-WH-008` | Niet-ondersteund eventtype |
+
+---
+
+## SKY-DB — Database
+
+Gegenereerd door de SQLite-opslag.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-DB-001` | Kan databasebestand niet openen |
+| `SKY-DB-002` | Kan schema of migratie niet toepassen |
+| `SKY-DB-003` | Query-uitvoering mislukt |
+| `SKY-DB-004` | Record niet gevonden |
+| `SKY-DB-005` | Migratie mislukt |
+| `SKY-DB-006` | Constraint-schending (uniek, foreign key, etc.) |
+| `SKY-DB-007` | Databasebewerking time-out |
+| `SKY-DB-008` | Databasebestand beschadigd — herstel vanuit back-up of verwijder `~/.sky/sky.db` om te resetten |
+
+---
+
+## SKY-CL — Claude CLI
+
+Gegenereerd bij aanroepen van de `claude`-binary.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-CL-001` | `claude`-binary niet gevonden in `PATH` — voer `sky setup` uit |
+| `SKY-CL-002` | Kan `claude`-process niet starten |
+| `SKY-CL-003` | Kan stream-json-output van `claude` niet parseren |
+| `SKY-CL-004` | `claude` afgesloten met niet-nul exitcode |
+| `SKY-CL-005` | Budgetlimiet bereikt in de Claude-sessie |
+| `SKY-CL-006` | Claude-sessie time-out |
+| `SKY-CL-007` | Claude-authenticatie mislukt — voer `claude` eenmaal uit om opnieuw te authenticeren |
+| `SKY-CL-008` | Claude API-snelheidslimiet — probeer opnieuw na vertraging |
+| `SKY-CL-009` | Claude API overbelast |
+| `SKY-CL-010` | Contextvenster overschreden — verklein de prompt of splits de workflow |
+
+---
+
+## SKY-CFG — Configuratie
+
+Gegenereerd bij opstarten of laden van configuratie.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-CFG-001` | Kan `~/.sky/config.yaml` niet laden |
+| `SKY-CFG-002` | Kan config-YAML niet parseren |
+| `SKY-CFG-003` | Vereiste configuratiewaarde ontbreekt |
+| `SKY-CFG-004` | Configuratiewaarde ongeldig — verkeerd type of buiten bereik |
+| `SKY-CFG-005` | Kan configuratiebestand niet lezen of schrijven — controleer rechten |
+
+---
+
+## SKY-CLN — Clone
+
+Gegenereerd tijdens git clone- of pull-operaties.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-CLN-001` | `git clone` mislukt |
+| `SKY-CLN-002` | `git pull` op bestaande kloon mislukt |
+| `SKY-CLN-003` | Git-authenticatie mislukt — controleer token of SSH-sleutel |
+| `SKY-CLN-004` | Repository niet gevonden |
+| `SKY-CLN-005` | Onvoldoende schijfruimte voor kloon |
+
+---
+
+## SKY-AUTH — Authenticatie
+
+Gegenereerd door beveiligde eindpunten.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-AUTH-001` | Authenticatie vereist — geen token of sessie opgegeven |
+| `SKY-AUTH-002` | Ongeldig token |
+| `SKY-AUTH-003` | Geauthenticeerd maar niet bevoegd voor deze actie |
+| `SKY-AUTH-004` | Sessie verlopen |
+| `SKY-AUTH-005` | Verzoek van geblokkeerd IP-adres |
+
+---
+
+## SKY-WS — WebSocket
+
+Gegenereerd bij WebSocket-verbindingen en -abonnementen.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-WS-001` | WebSocket-verbinding mislukt |
+| `SKY-WS-002` | Niet bevoegd om op deze run te abonneren |
+| `SKY-WS-003` | WebSocket-bericht overschrijdt de groottelimiet |
+| `SKY-WS-004` | WebSocket-verbinding onverwacht gesloten |
+| `SKY-WS-005` | Misvormd WebSocket-bericht |
+| `SKY-WS-006` | Te veel WebSocket-verbindingen — snelheidslimiet |
+
+---
+
+## SKY-API — REST API
+
+Gegenereerd door de HTTP API-laag.
+
+| Code | Betekenis |
+|------|-----------|
+| `SKY-API-001` | Misvormd verzoeklichaam |
+| `SKY-API-002` | Resource niet gevonden |
+| `SKY-API-003` | HTTP-methode niet toegestaan |
+| `SKY-API-004` | API-snelheidslimiet overschreden |
+| `SKY-API-005` | Verzoeklichaam overschrijdt de groottelimiet |
+| `SKY-API-006` | Interne serverfout |
+| `SKY-API-007` | Service tijdelijk niet beschikbaar |
+| `SKY-API-008` | Verzoekvalidatie mislukt — ontbrekende of ongeldige velden |
