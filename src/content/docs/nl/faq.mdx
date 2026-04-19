@@ -17,12 +17,12 @@ Nee. Skylence roept de `claude` CLI-binary aan. Je moet `claude` geïnstalleerd 
 - `claude` CLI in `PATH`
 - Een GitHub webhook gericht op je Skylence-instantie
 
-Go 1.22+ is enkel vereist op de **buildmachine**, niet bij het uitvoeren.
+Go 1.26+ is enkel vereist op de **buildmachine**, niet bij het uitvoeren.
 
 ## Waar definieer ik workflows?
 
-In `.sky/workflows/*.sky`-bestanden in je repository. Valideer ze met `./bin/sky lint`.
+In `.sky/workflows/*.sky`-bestanden in je repository. Valideer ze met `sky lint`.
 
 ## Is er een gebruikersinterface?
 
-Ja — een aparte SvelteKit SPA ([skylence.be](https://github.com/skylence-be/skylence.be)) verbindt met elke draaiende daemon via `?server=<url>`.
+Ja — een aparte SvelteKit SPA ([sandbox.skylence.be](https://sandbox.skylence.be)) verbindt met elke draaiende daemon via `?server=<url>`.

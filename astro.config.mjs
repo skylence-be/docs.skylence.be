@@ -29,9 +29,9 @@ export default defineConfig({
                     slug: 'index',
                 },
                 {
-                    label: 'Download',
-                    translations: { nl: 'Download' },
-                    slug: 'download',
+                    label: 'Installation',
+                    translations: { nl: 'Installatie' },
+                    slug: 'installation',
                 },
                 {
                     label: 'Getting Started',

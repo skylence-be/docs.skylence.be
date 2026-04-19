@@ -3,4 +3,68 @@ title: Architectuur
 description: Go backend, SvelteKit frontend, WebSocket stream, SQLite opslag.
 ---
 
-Documentatie volgt binnenkort.
+## Wat Skylence is
+
+Skylence is een Go-binary die declaratieve `.sky`-workflowbestanden omzet in gecoördineerde `claude`-subprocessruns met persistente state en live observeerbaarheid.
+
+Het implementeert geen LLM. Het roept de `claude` CLI-binary aan die je apart installeert.
+
+## Grenzen
+
+```
+┌──────────────────────────────┐
+│ sandbox.skylence.be (SPA)    │   aparte repo; verbindt via ?server=<url>
+└──────────┬───────────────────┘
+           │ HTTPS + WebSocket
+┌──────────▼───────────────────┐
+│  sky (Go binary)             │
+│  ┌────────────┐ ┌──────────┐ │
+│  │ Huma REST  │ │ WS hub   │ │
+│  └─────┬──────┘ └────┬─────┘ │
+│        │             │       │
+│  ┌─────▼─────────────▼─────┐ │
+│  │ runner (DAG-executor)   │ │
+│  └─────┬─────────────┬─────┘ │
+│        │             │       │
+│  ┌─────▼─────┐ ┌─────▼─────┐ │
+│  │  claude   │ │  sqlite   │ │
+│  │  CLI      │ │  (store)  │ │
+│  └───────────┘ └───────────┘ │
+└──────────────────────────────┘
+```
+
+## Hoe het werkt
+
+1. **GitHub verstuurt een webhook** naar `sky serve`. De HMAC-handtekening wordt geverifieerd; het event wordt gematcht met geladen workflowtriggers.
+2. **Runner bouwt een DAG** op basis van de nodedefinities van de gematchte workflow en bepaalt de uitvoeringsvolgorde via `depends_on`.
+3. **Elke node wordt op volgorde uitgevoerd.** Prompt/command-nodes roepen `claude` aan; bash-nodes voeren een shellcommando uit; http-nodes bellen een externe URL. Node-outputs worden opgeslagen in SQLite en doorgegeven aan volgende nodes als `$node.output`.
+4. **Events stromen via WebSocket** naar verbonden SPA-clients in real time.
+5. **Resultaten worden opgeslagen** in `~/.sky/sky.db`. `sky logs` leest uit deze store.
+
+## Subsystemen
+
+| Component | Rol |
+|-----------|-----|
+| CLI | Cobra-gebaseerde ingangspunten voor alle `sky`-commando's |
+| HTTP-server | REST API + WebSocket hub |
+| Workflow-engine | `.sky`-parser, loader, validator |
+| Runner | DAG-executor, isolatieresolver, budgetgate |
+| Claude-brug | `claude` CLI-subprocesswrapper + stream-json-parser |
+| Store | SQLite-persistentie voor runs, stappen en budgetledger |
+| WebSocket hub | Zendt run-events uit naar verbonden SPA-clients in real time |
+| Webhook-ontvanger | GitHub webhook-ingress met HMAC-verificatie en replaybeveiliging |
+| Router | Matcht inkomende events aan workflowtriggers |
+| Config | `.env` + configuratiebestand + omgevingsvariabelen laden met prioriteit |
+| Rate limiter | Per-IP token bucket voor API-, webhook- en WebSocket-eindpunten |
+| Metrics | Prometheus-expositie (opt-in) |
+
+## Ontwerpkeuzes
+
+**Alleen Claude.** Geen provider-abstractie. Claude Code native features — `--mcp-config`, `--strict-mcp-config`, sessies, isolatie — worden direct gebruikt. Provider-switching toevoegen zou directe toegang tot deze mogelijkheden kosten.
+
+**Geen cloudafhankelijkheid.** De binary slaat alles lokaal op in SQLite. Geen beheerde backend, standaard geen telemetrie.
+
+**LLM-geschreven workflows, menselijk beoordeeld.** Het `.sky`-formaat is machinevriendelijk, niet ergonomisch. Mensen beoordelen wat de LLM heeft geschreven vóór het mergen.
+
+**Veiligheid bij parseren.** `sky lint` weigert command-injection patronen, onbekende isolatieniveaus en onveilige bash-vertrouwenspaden. Runtime-handhaving is verdediging in de diepte, niet de primaire linie.
+
