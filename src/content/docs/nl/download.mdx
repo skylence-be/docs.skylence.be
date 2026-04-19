@@ -1,0 +1,79 @@
+---
+title: Download
+description: Installeer de Skylence-binary — vooraf gebouwde releases, zelf-update en checksum-verificatie.
+---
+
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+Skylence wordt geleverd als één statische binary genaamd `sky`. Hij draait als lokale daemon op je eigen machine — geen account, geen cloud.
+
+## Vooraf gebouwde binaries
+
+Elke release op GitHub publiceert binaries voor macOS en Linux, zowel amd64 als arm64.
+
+<Tabs>
+    <TabItem label="macOS (arm64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-arm64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        sky --version
+        ```
+    </TabItem>
+    <TabItem label="macOS (amd64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-darwin-amd64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        sky --version
+        ```
+    </TabItem>
+    <TabItem label="Linux (arm64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-arm64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        sky --version
+        ```
+    </TabItem>
+    <TabItem label="Linux (amd64)">
+        ```sh
+        curl -L -o sky.tar.gz https://github.com/skylence-be/skylence/releases/latest/download/sky-linux-amd64.tar.gz
+        tar -xzf sky.tar.gz
+        sudo mv sky /usr/local/bin/sky
+        sky --version
+        ```
+    </TabItem>
+</Tabs>
+
+Bekijk alle releases en kies een specifieke versie op [github.com/skylence-be/skylence/releases](https://github.com/skylence-be/skylence/releases).
+
+## Controleer de download
+
+Elke release bevat een `checksums.txt`-bestand met SHA-256-hashes voor alle archieven.
+
+```sh
+curl -L -O https://github.com/skylence-be/skylence/releases/latest/download/checksums.txt
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+De regel voor jouw archief moet eindigen op `OK`. Zo niet: stop en download opnieuw — voer de binary niet uit.
+
+## Zelf-update
+
+Eenmaal geïnstalleerd werkt `sky` zichzelf bij uit hetzelfde release-kanaal:
+
+```sh
+sky update --check      # meldt of er een nieuwere release beschikbaar is
+sky update              # installeert de laatste release (met bevestiging)
+sky update --to v0.2.0  # pin op een specifieke tag (rollback of reproduceerbare install)
+sky update -y           # installeer zonder bevestiging (CI, scripts)
+```
+
+Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten — installeer eerst een release-binary via één van de opties hierboven.
+
+## Volgende stap
+
+- [Aan de slag](/nl/getting-started/) — installeer `claude`, initialiseer de data-map, draai je eerste workflow.
+- [CLI-referentie](/nl/cli/) — elk `sky`-subcommando met vlaggen.
+- [Configuratie](/nl/configuration/) — configuratiebestand, env vars, TLS, rate limits.

@@ -29,6 +29,11 @@ export default defineConfig({
                     slug: 'index',
                 },
                 {
+                    label: 'Download',
+                    translations: { nl: 'Download' },
+                    slug: 'download',
+                },
+                {
                     label: 'Getting Started',
                     translations: { nl: 'Aan de slag' },
                     slug: 'getting-started',

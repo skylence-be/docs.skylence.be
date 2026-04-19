@@ -10,6 +10,7 @@ export const collections = {
 			extend: z.object({
 				unlisted: z.boolean().optional(),
 				icon: z.string().optional(),
+				link: z.string().optional(),
 			}),
 		}),
 	}),
