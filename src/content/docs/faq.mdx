@@ -13,9 +13,11 @@ No. Skylence shells out to the `claude` CLI binary. You must have `claude` insta
 
 ## What do I need to run Skylence?
 
-- Go 1.22+
+- The `sky` binary (pre-built release or `make build` on the build host)
 - `claude` CLI in `PATH`
 - A GitHub webhook pointed at your Skylence instance
+
+Go 1.22+ is only required on the **build machine**, not at runtime.
 
 ## Where do I define workflows?
 
