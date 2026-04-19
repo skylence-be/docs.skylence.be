@@ -22,6 +22,7 @@ export const GET: APIRoute = async ({ params }) => {
       slug: entry.id.replace(/^[a-z]{2}(\/|$)/, '') || 'index',
       title: entry.data.title,
       description: entry.data.description ?? null,
+      unlisted: entry.data.unlisted ?? false,
       lang,
     }));
 
