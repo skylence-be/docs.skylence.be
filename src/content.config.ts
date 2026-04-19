@@ -9,6 +9,7 @@ export const collections = {
 		schema: docsSchema({
 			extend: z.object({
 				unlisted: z.boolean().optional(),
+				icon: z.string().optional(),
 			}),
 		}),
 	}),
