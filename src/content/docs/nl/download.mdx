@@ -34,6 +34,10 @@ curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/inst
 
 De installer ondersteunt macOS en Linux op zowel amd64 als arm64.
 
+### Windows (WSL2)
+
+Native Windows wordt niet ondersteund. Installeer WSL2 en draai de Linux-binary vanuit je WSL-distro — de installer hierboven werkt as-is vanuit een WSL-shell en plaatst `sky` onder `/usr/local/bin/sky`. WSL1 wordt niet ondersteund.
+
 ## Zelf-update
 
 Eenmaal geïnstalleerd werkt `sky` zichzelf bij uit hetzelfde release-kanaal:
@@ -46,6 +50,32 @@ sky update -y           # installeer zonder bevestiging (CI, scripts)
 ```
 
 Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten — installeer eerst een release-binary via de installer hierboven.
+
+## Verwijderen
+
+Verwijder de `sky`-binary:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh
+```
+
+Je data-map `~/.sky` (configs, workflow runs, SQLite-DB) blijft standaard bewaard. Om die ook te verwijderen:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --purge
+```
+
+Sla bevestigingen over met `-y`:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --purge -y
+```
+
+Als je naar een eigen map installeerde, geef `--dir` mee:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --dir ~/.local/bin
+```
 
 ## Handmatig installeren
 

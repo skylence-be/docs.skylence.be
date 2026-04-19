@@ -34,6 +34,10 @@ curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/inst
 
 The installer supports macOS and Linux on both amd64 and arm64.
 
+### Windows (WSL2)
+
+Native Windows is not supported. Install WSL2 and run the Linux binary from inside your WSL distro — the installer above works as-is from a WSL shell and places `sky` under `/usr/local/bin/sky`. WSL1 is not supported.
+
 ## Self-update
 
 Once installed, `sky` updates itself from the same release channel:
@@ -46,6 +50,32 @@ sky update -y           # install without prompting (CI, scripts)
 ```
 
 Dev builds (when `sky --version` reports `dev`) cannot self-update — install a release binary first using the installer above.
+
+## Uninstall
+
+Remove the `sky` binary:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh
+```
+
+By default, your data directory at `~/.sky` (configs, workflow runs, SQLite DB) is preserved. To remove it as well:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --purge
+```
+
+Skip confirmation prompts with `-y`:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --purge -y
+```
+
+If you installed to a custom directory, pass `--dir`:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/uninstall.sh | sh -s -- --dir ~/.local/bin
+```
 
 ## Manual install
 
