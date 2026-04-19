@@ -3,4 +3,89 @@ title: Getting Started
 description: Install Skylence and run your first workflow.
 ---
 
-Documentation coming soon.
+## Prerequisites
+
+- `sky` binary — [install](/installation/) if you haven't already
+- `claude` CLI — install from [claude.com/claude-code](https://claude.com/claude-code) and complete OAuth (run `claude` once in terminal)
+- A GitHub repository with a webhook pointed at your running Skylence instance
+
+## 1. Initialize
+
+After installing `sky`, run:
+
+```sh
+sky setup
+```
+
+This creates `~/.sky/` (data directory + database), seeds the managed Claude environment, and reports whether `claude` is in your `PATH`.
+
+## 2. Start the daemon
+
+```sh
+sky serve
+```
+
+The daemon binds to `127.0.0.1:3090` by default. For local development, you need a public HTTPS URL so GitHub can reach it — use a tunnel (Cloudflare, ngrok, or similar).
+
+## 3. Register a GitHub webhook
+
+Let `sky` register the webhook for you:
+
+```sh
+sky webhook register --repo owner/name --url https://your-tunnel.example.com
+```
+
+This creates the webhook on GitHub and writes the HMAC secret to `~/.sky/.env`. Restart `sky serve` to reload the secret.
+
+Or register manually in your repo → Settings → Webhooks → Add webhook:
+- **Payload URL:** `https://your-tunnel.example.com/webhooks/github`
+- **Content type:** `application/json`
+- **Secret:** paste the value of `SKY_GITHUB_SECRET` from `~/.sky/.env`
+
+## 4. Create a workflow
+
+Workflows live in `.sky/workflows/*.sky` in your repository. A minimal example:
+
+```
+⊕meta⊕
+name = "hello"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky"
+⊕⊕
+
+§greet§
+model = "sonnet"
+§§
+
+∆greet∆
+Say hello. Report the issue number: {{issue.number}}.
+∆∆
+```
+
+Validate it:
+
+```sh
+sky lint
+```
+
+## 5. Trigger or run manually
+
+When GitHub fires an event matching the workflow's trigger, `sky serve` picks it up automatically.
+
+To test without a webhook event:
+
+```sh
+sky run hello --repo /path/to/repo --issue 42
+```
+
+View results:
+
+```sh
+sky logs
+```
+
+## What's next
+
+- [CLI Reference](/cli/) — every `sky` command with flags.
+- [Workflow Format](/workflow-format/) — the `.sky` format, DAG nodes, and template variables.
+- [Configuration](/configuration/) — config file, env vars, and TLS.

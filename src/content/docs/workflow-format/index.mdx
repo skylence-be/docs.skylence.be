@@ -3,4 +3,111 @@ title: Workflow Format
 description: The .sky file format — meta, nodes, and prompts.
 ---
 
-Documentation coming soon.
+`.sky` files are Go-parsed workflow definitions. LLMs author them; humans review what the LLM wrote.
+
+Workflows live in `.sky/workflows/*.sky` in your repository.
+
+## Structure
+
+Three Unicode delimiters carve a `.sky` file into sections:
+
+| Delimiter | Read by | Purpose |
+|-----------|---------|---------|
+| `⊕meta⊕ ... ⊕⊕` | Go | Workflow identity, trigger config. Required, exactly one. |
+| `§<id>§ ... §§` | Go | DAG node config (model, deps, isolation, …). One per node. |
+| `∆<id>∆ ... ∆∆` | Claude | Prompt body for node `<id>`. Paired with `§<id>§` by ID. |
+
+Every opener and closer must be alone on its own line. Execution order comes from `depends_on`; top-to-bottom order in the file is the default for nodes with no dependencies.
+
+## Example
+
+```
+⊕meta⊕
+name = "fix-github-issue"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "ready-for-sky"
+⊕⊕
+
+§plan§
+command = "plan"
+model = "opus"
+§§
+
+§implement§
+command = "implement"
+depends_on = ["plan"]
+isolation = "worktree"
+§§
+
+∆implement∆
+Execute the plan. Run tests. Open a PR when green.
+∆∆
+```
+
+## Node keys (`§` section)
+
+`key = value` pairs, one per line. Values are JSON strings, numbers, booleans, `null`, or JSON arrays. Lines starting with `#` are comments.
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `command` | string | Reference to `.sky/commands/<name>.md` |
+| `prompt` | string | Inline prompt (also supplements `command`) |
+| `bash` | string | Shell command to run |
+| `http` | object | Outbound HTTP call config |
+| `eval` | object | Assertion on a prior node's output |
+| `loop` | object | Repeat body until condition passes |
+| `wait` | object | Pause for human approval or webhook |
+| `depends_on` | array | Node IDs this node waits for |
+| `when` | string | Condition expression — skip node if false |
+| `model` | string | Claude model: `sonnet`, `opus`, `haiku` |
+| `effort` | string | Claude effort level |
+| `isolation` | string | `worktree` — run in isolated git worktree |
+| `max_budget_usd` | number | Per-node spend cap |
+| `trigger_rule` | string | `all_done` (default), `all_success`, `one_success`, `one_failure` |
+| `chain_from` | string | Node ID whose Claude session to resume |
+| `output_format` | object | JSON schema for structured output |
+
+## Template variables
+
+Use `{{var}}` in `∆` prompt bodies and `http` node configs to substitute webhook payload fields.
+
+```
+∆greet∆
+Say hello. The issue number is {{issue.number}} in {{repo.full_name}}.
+∆∆
+```
+
+### Filters
+
+| Filter | Output |
+|--------|--------|
+| `{{var}}` | Raw value |
+| `{{var\|json}}` | JSON-encoded value — use inside JSON bodies without surrounding quotes |
+| `{{var\|urlencode}}` | URL-encoded value — use in query strings |
+
+`sky lint` flags bare `{{var}}` inside JSON string literals as `SKY-WF-047`.
+
+### Bash nodes
+
+`{{var}}` is **not available** in `bash` or `loop.until.bash`. Webhook-derived variables reach bash through environment variables: `SKY_<UPPER_KEY>` (dots → underscores). Prior node outputs are available as `$SKY_OUTPUT_<NODE_ID>`. Always quote: `"$SKY_ISSUE_NUMBER"`.
+
+## MCP servers
+
+Expose MCP servers to all prompt/command nodes via `mcp_servers` in `⊕meta⊕`:
+
+```
+⊕meta⊕
+name = "with-gitnexus"
+mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
+⊕⊕
+```
+
+The map merges with `~/.sky/claude-env/mcp.json`. Name collisions with managed servers abort the run.
+
+## Validation
+
+```sh
+sky lint
+```
+
+Validates all `.sky` files in the current repository. Run before committing workflow changes.

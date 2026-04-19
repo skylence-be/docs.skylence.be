@@ -3,4 +3,111 @@ title: Workflow-formaat
 description: Het .sky bestandsformaat — meta, nodes en prompts.
 ---
 
-Documentatie volgt binnenkort.
+`.sky`-bestanden zijn Go-geparseerde workflowdefinities. LLMs schrijven ze; mensen beoordelen wat de LLM heeft geschreven.
+
+Workflows staan in `.sky/workflows/*.sky` in je repository.
+
+## Structuur
+
+Drie Unicode-scheidingstekens verdelen een `.sky`-bestand in secties:
+
+| Scheidingsteken | Gelezen door | Doel |
+|-----------------|--------------|------|
+| `⊕meta⊕ ... ⊕⊕` | Go | Workflow-identiteit, triggerconfiguratie. Verplicht, precies één. |
+| `§<id>§ ... §§` | Go | DAG-nodeconfiguratie (model, deps, isolatie, …). Één per node. |
+| `∆<id>∆ ... ∆∆` | Claude | Prompttekst voor node `<id>`. Gekoppeld aan `§<id>§` via ID. |
+
+Elke opener en closer moet alleen op zijn eigen regel staan. Uitvoeringsvolgorde komt van `depends_on`; de volgorde van boven naar onder in het bestand is de standaard voor nodes zonder afhankelijkheden.
+
+## Voorbeeld
+
+```
+⊕meta⊕
+name = "fix-github-issue"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "ready-for-sky"
+⊕⊕
+
+§plan§
+command = "plan"
+model = "opus"
+§§
+
+§implement§
+command = "implement"
+depends_on = ["plan"]
+isolation = "worktree"
+§§
+
+∆implement∆
+Voer het plan uit. Voer tests uit. Open een PR wanneer alles groen is.
+∆∆
+```
+
+## Node-sleutels (`§`-sectie)
+
+`key = value`-paren, één per regel. Waarden zijn JSON-strings, getallen, booleans, `null` of JSON-arrays. Regels die beginnen met `#` zijn commentaar.
+
+| Sleutel | Type | Beschrijving |
+|---------|------|--------------|
+| `command` | string | Verwijzing naar `.sky/commands/<naam>.md` |
+| `prompt` | string | Inline prompt (vult ook `command` aan) |
+| `bash` | string | Uit te voeren shellcommando |
+| `http` | object | Configuratie voor uitgaande HTTP-call |
+| `eval` | object | Bewering op de output van een eerdere node |
+| `loop` | object | Herhaal body totdat conditie slaagt |
+| `wait` | object | Pauzeer voor menselijke goedkeuring of webhook |
+| `depends_on` | array | Node-ID's waarop deze node wacht |
+| `when` | string | Conditie-expressie — sla node over als onwaar |
+| `model` | string | Claude-model: `sonnet`, `opus`, `haiku` |
+| `effort` | string | Claude-inspanningsniveau |
+| `isolation` | string | `worktree` — voer uit in geïsoleerde git worktree |
+| `max_budget_usd` | number | Maximale uitgavengrens per node |
+| `trigger_rule` | string | `all_done` (standaard), `all_success`, `one_success`, `one_failure` |
+| `chain_from` | string | Node-ID waarvan de Claude-sessie wordt hervat |
+| `output_format` | object | JSON-schema voor gestructureerde output |
+
+## Templatevariabelen
+
+Gebruik `{{var}}` in `∆`-promptteksten en `http`-nodeconfiguraties om webhook-payloadvelden te vervangen.
+
+```
+∆begroet∆
+Zeg hallo. Het issue-nummer is {{issue.number}} in {{repo.full_name}}.
+∆∆
+```
+
+### Filters
+
+| Filter | Output |
+|--------|--------|
+| `{{var}}` | Ruwe waarde |
+| `{{var\|json}}` | JSON-gecodeerde waarde — gebruik in JSON-bodies zonder aanhalingstekens eromheen |
+| `{{var\|urlencode}}` | URL-gecodeerde waarde — gebruik in querystrings |
+
+`sky lint` markeert kale `{{var}}` binnen JSON-stringliterals als `SKY-WF-047`.
+
+### Bash-nodes
+
+`{{var}}` is **niet beschikbaar** in `bash` of `loop.until.bash`. Webhook-variabelen bereiken bash via omgevingsvariabelen: `SKY_<HOOFDLETTER_SLEUTEL>` (punten → underscores). Eerdere node-outputs zijn beschikbaar als `$SKY_OUTPUT_<NODE_ID>`. Altijd quoten: `"$SKY_ISSUE_NUMBER"`.
+
+## MCP-servers
+
+Stel MCP-servers beschikbaar aan alle prompt/command-nodes via `mcp_servers` in `⊕meta⊕`:
+
+```
+⊕meta⊕
+name = "with-gitnexus"
+mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
+⊕⊕
+```
+
+De map wordt samengevoegd met `~/.sky/claude-env/mcp.json`. Naambotsingen met beheerde servers breken de run af.
+
+## Validatie
+
+```sh
+sky lint
+```
+
+Valideert alle `.sky`-bestanden in de huidige repository. Voer dit uit vóór het committen van workflowwijzigingen.

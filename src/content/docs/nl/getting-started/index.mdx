@@ -3,4 +3,89 @@ title: Aan de slag
 description: Installeer Skylence en voer je eerste workflow uit.
 ---
 
-Documentatie volgt binnenkort.
+## Vereisten
+
+- `sky` binary — [installeer](/nl/installation/) als je dat nog niet gedaan hebt
+- `claude` CLI — installeer via [claude.com/claude-code](https://claude.com/claude-code) en voltooi OAuth (voer `claude` eenmaal uit in de terminal)
+- Een GitHub-repository met een webhook gericht op je draaiende Skylence-instantie
+
+## 1. Initialiseer
+
+Na het installeren van `sky`, voer je uit:
+
+```sh
+sky setup
+```
+
+Dit maakt `~/.sky/` aan (datamap + database), zaait de beheerde Claude-omgeving in, en meldt of `claude` beschikbaar is in je `PATH`.
+
+## 2. Start de daemon
+
+```sh
+sky serve
+```
+
+De daemon bindt standaard aan `127.0.0.1:3090`. Voor lokale ontwikkeling heb je een publieke HTTPS-URL nodig zodat GitHub het kan bereiken — gebruik een tunnel (Cloudflare, ngrok of vergelijkbaar).
+
+## 3. Registreer een GitHub-webhook
+
+Laat `sky` de webhook voor je registreren:
+
+```sh
+sky webhook register --repo owner/naam --url https://jouw-tunnel.example.com
+```
+
+Dit maakt de webhook aan op GitHub en schrijft het HMAC-secret naar `~/.sky/.env`. Start `sky serve` opnieuw op om het secret te laden.
+
+Of registreer handmatig via je repository → Instellingen → Webhooks → Webhook toevoegen:
+- **Payload URL:** `https://jouw-tunnel.example.com/webhooks/github`
+- **Content type:** `application/json`
+- **Secret:** plak de waarde van `SKY_GITHUB_SECRET` uit `~/.sky/.env`
+
+## 4. Maak een workflow aan
+
+Workflows staan in `.sky/workflows/*.sky` in je repository. Een minimaal voorbeeld:
+
+```
+⊕meta⊕
+name = "hallo"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky"
+⊕⊕
+
+§begroet§
+model = "sonnet"
+§§
+
+∆begroet∆
+Zeg hallo. Vermeld het issue-nummer: {{issue.number}}.
+∆∆
+```
+
+Valideer het:
+
+```sh
+sky lint
+```
+
+## 5. Activeer of voer handmatig uit
+
+Wanneer GitHub een event verstuurt dat overeenkomt met de trigger van de workflow, pikt `sky serve` dit automatisch op.
+
+Om te testen zonder webhook-event:
+
+```sh
+sky run hallo --repo /pad/naar/repo --issue 42
+```
+
+Bekijk resultaten:
+
+```sh
+sky logs
+```
+
+## Volgende stappen
+
+- [CLI-referentie](/nl/cli/) — alle `sky`-commando's met vlaggen.
+- [Workflow-formaat](/nl/workflow-format/) — het `.sky`-formaat, DAG-nodes en templatevariabelen.
+- [Configuratie](/nl/configuration/) — configuratiebestand, omgevingsvariabelen en TLS.

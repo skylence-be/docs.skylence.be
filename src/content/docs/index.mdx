@@ -9,3 +9,35 @@ hero:
       link: /getting-started/
       icon: right-arrow
 ---
+
+## What is Skylence?
+
+Skylence is a Claude Code harness. It listens for GitHub webhook events, matches them to workflow definitions, and runs each step by calling the `claude` CLI — streaming results over WebSocket to connected clients in real time.
+
+You write workflows as `.sky` files in your repository. Skylence handles the rest: trigger matching, DAG execution, budget enforcement, and live observability.
+
+## How it works
+
+1. A GitHub event (issue labeled, PR opened, …) triggers a matching workflow.
+2. Skylence executes each node in dependency order — calling Claude, running shell commands, or making HTTP requests.
+3. Every step is streamed live and stored locally. Nothing leaves your machine.
+
+## Key capabilities
+
+- **Structured workflows** — define multi-step DAGs with dependencies, conditions, and loops in `.sky` files.
+- **Claude-native** — uses `claude` CLI sessions, MCP config, and isolation flags directly.
+- **Cost controls** — per-node and monthly spend caps enforced before Claude is invoked.
+- **Parse-time safety** — `sky lint` catches injection risks and schema errors before any workflow runs.
+- **Local-first** — no account, no cloud backend. State stored in SQLite on your machine.
+- **Live streaming** — run events stream over WebSocket to the [sandbox.skylence.be](https://sandbox.skylence.be) SPA.
+
+## Where to go next
+
+| | |
+|---|---|
+| [Installation](/installation/) | Install the `sky` binary |
+| [Getting Started](/getting-started/) | Run your first workflow |
+| [Workflow Format](/workflow-format/) | Learn the `.sky` file format |
+| [CLI Reference](/cli/) | All commands and flags |
+| [Configuration](/configuration/) | Config file and env vars |
+| [Architecture](/architecture/) | How the pieces fit together |

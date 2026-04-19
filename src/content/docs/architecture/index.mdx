@@ -3,4 +3,68 @@ title: Architecture
 description: Go backend, SvelteKit frontend, WebSocket stream, SQLite store.
 ---
 
-Documentation coming soon.
+## What Skylence is
+
+Skylence is a Go binary that turns declarative `.sky` workflow files into orchestrated `claude` subprocess runs with persistent state and live observability.
+
+It does not implement an LLM. It shells out to the `claude` CLI binary you install separately.
+
+## Boundaries
+
+```
+┌──────────────────────────────┐
+│ sandbox.skylence.be (SPA)    │   separate repo; connects via ?server=<url>
+└──────────┬───────────────────┘
+           │ HTTPS + WebSocket
+┌──────────▼───────────────────┐
+│  sky (Go binary)             │
+│  ┌────────────┐ ┌──────────┐ │
+│  │ Huma REST  │ │ WS hub   │ │
+│  └─────┬──────┘ └────┬─────┘ │
+│        │             │       │
+│  ┌─────▼─────────────▼─────┐ │
+│  │ runner (DAG executor)   │ │
+│  └─────┬─────────────┬─────┘ │
+│        │             │       │
+│  ┌─────▼─────┐ ┌─────▼─────┐ │
+│  │  claude   │ │  sqlite   │ │
+│  │  CLI      │ │  (store)  │ │
+│  └───────────┘ └───────────┘ │
+└──────────────────────────────┘
+```
+
+## How it works
+
+1. **GitHub sends a webhook** to `sky serve`. HMAC signature is verified; event is matched against loaded workflow triggers.
+2. **Runner builds a DAG** from the matched workflow's node definitions and resolves execution order via `depends_on`.
+3. **Each node runs in order.** Prompt/command nodes shell out to `claude`; bash nodes run a shell command; http nodes call an external URL. Node outputs are stored in SQLite and passed to downstream nodes as `$node.output`.
+4. **Events stream over WebSocket** to any connected SPA client in real time.
+5. **Results persist** in `~/.sky/sky.db`. `sky logs` reads from this store.
+
+## Subsystems
+
+| Component | Role |
+|-----------|------|
+| CLI | Cobra-based entry points for all `sky` commands |
+| HTTP server | REST API + WebSocket hub |
+| Workflow engine | `.sky` parser, loader, validator |
+| Runner | DAG executor, isolation resolver, budget gate |
+| Claude bridge | `claude` CLI subprocess wrapper + stream-json parser |
+| Store | SQLite persistence for runs, steps, and budget ledger |
+| WebSocket hub | Fans run events to connected SPA clients in real time |
+| Webhook receiver | GitHub webhook ingress with HMAC verification and replay guard |
+| Router | Matches incoming events to workflow triggers |
+| Config | `.env` + config file + env var loading with precedence |
+| Rate limiter | Per-IP token bucket for API, webhook, and WebSocket endpoints |
+| Metrics | Prometheus exposition (opt-in) |
+
+## Design choices
+
+**Claude-only.** No provider abstraction. Claude Code native features — `--mcp-config`, `--strict-mcp-config`, sessions, isolation — are used directly. Adding provider switching would cost the direct access to these capabilities.
+
+**No cloud dependency.** The binary stores everything locally in SQLite. No managed backend, no telemetry by default.
+
+**LLM-authored workflows, human-reviewed.** The `.sky` format is machine-friendly, not ergonomic. Humans review what the LLM wrote before merging it to the repository.
+
+**Parse-time safety.** `sky lint` rejects command-injection shapes, unknown isolation levels, and unsafe bash trust paths. Runtime enforcement is defense-in-depth, not the primary line.
+
