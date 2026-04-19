@@ -14,7 +14,7 @@ Drie Unicode-scheidingstekens verdelen een `.sky`-bestand in secties:
 | Scheidingsteken | Gelezen door | Doel |
 |-----------------|--------------|------|
 | `⊕meta⊕ ... ⊕⊕` | Go | Workflow-identiteit, triggerconfiguratie. Verplicht, precies één. |
-| `§<id>§ ... §§` | Go | DAG-nodeconfiguratie (model, deps, isolatie, …). Één per node. |
+| `§<id>§ ... §§` | Go | Stapconfiguratie (model, deps, isolatie, …). Één per stap in de workflowgraph (DAG). |
 | `∆<id>∆ ... ∆∆` | Claude | Prompttekst voor node `<id>`. Gekoppeld aan `§<id>§` via ID. |
 
 Elke opener en closer moet alleen op zijn eigen regel staan. Uitvoeringsvolgorde komt van `depends_on`; de volgorde van boven naar onder in het bestand is de standaard voor nodes zonder afhankelijkheden.

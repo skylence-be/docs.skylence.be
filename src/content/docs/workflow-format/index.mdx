@@ -14,7 +14,7 @@ Three Unicode delimiters carve a `.sky` file into sections:
 | Delimiter | Read by | Purpose |
 |-----------|---------|---------|
 | `⊕meta⊕ ... ⊕⊕` | Go | Workflow identity, trigger config. Required, exactly one. |
-| `§<id>§ ... §§` | Go | DAG node config (model, deps, isolation, …). One per node. |
+| `§<id>§ ... §§` | Go | Step config (model, deps, isolation, …). One per step in the workflow graph (DAG). |
 | `∆<id>∆ ... ∆∆` | Claude | Prompt body for node `<id>`. Paired with `§<id>§` by ID. |
 
 Every opener and closer must be alone on its own line. Execution order comes from `depends_on`; top-to-bottom order in the file is the default for nodes with no dependencies.

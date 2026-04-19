@@ -1,0 +1,119 @@
+---
+title: Probleemoplossing
+description: Veelvoorkomende problemen en hoe je ze oplost.
+---
+
+## `claude: command not found`
+
+Skylence voert `claude` uit als subproces. Als `sky serve` of `sky run` deze fout meldt, staat de Claude Code CLI niet in je PATH.
+
+**Oplossing:** Voer `sky setup` uit — dat controleert of `claude` en `gh` bereikbaar zijn. Als dat niet het geval is, installeer Claude Code en bevestig dat `claude --version` werkt in een nieuw terminal voordat je de daemon start.
+
+Zie [Foutcodes](/nl/error-codes/) — `SKY-CL-001`.
+
+---
+
+## Webhook ontvangen maar geen workflow start
+
+Controleer deze vier zaken op volgorde:
+
+1. **Label overeenkomst** — het `trigger.github.label` in je `.sky`-bestand moet exact overeenkomen met het label dat je hebt toegevoegd. Labels zijn hoofdlettergevoelig.
+2. **HMAC-secret** — als het webhooksecret in `~/.sky/.env` niet overeenkomt met het geconfigureerde geheim op GitHub, wordt elke inkomende webhook afgewezen met `SKY-WH-001`. Genereer opnieuw met `sky webhook register`.
+3. **Geldige workflow** — voer `sky lint` uit. Een ongeldige workflow wordt stil overgeslagen bij het laden. Lintfouten worden gemeld bij opstarten maar zijn makkelijk te missen.
+4. **Daemon actief** — `sky serve` moet actief zijn en bereikbaar zijn op de URL die bij GitHub is geregistreerd.
+
+---
+
+## Workflow start maar mislukt meteen
+
+Voer `sky logs <run-id>` uit om het volledige eventlog te bekijken.
+
+| Code | Oorzaak | Oplossing |
+|------|---------|-----------|
+| `SKY-WF-001` | Workflowbestand kon niet worden verwerkt | Voer `sky lint` uit voor details |
+| `SKY-WF-002` | Verplicht veld ontbreekt in `⊕meta⊕` | Zie [Workflow-formaat](/nl/workflow-format/) |
+| `SKY-CL-003` | `claude` afgesloten met fout meteen | Voer `claude --version` uit; probeer handmatig |
+| `SKY-RUN-002` | Kringverwijzing in `depends_on` | Controleer op circulaire node-verwijzingen |
+
+---
+
+## Een stap draait lang
+
+Dit is meestal normaal. Opus met `effort = "max"` op een grote codebase kan meerdere minuten duren. Controleer `sky logs <run-id>` — events stromen binnen terwijl de run nog bezig is, zodat je kunt zien wat er gebeurt.
+
+Als er helemaal geen events verschijnen na de eerste paar seconden, kan het `claude`-subproces vastgelopen zijn. Stop de daemon, herstart met `sky serve` en hervat de run:
+
+```sh
+sky run <workflownaam> --resume <run-id>
+```
+
+---
+
+## Budgetlimiet bereikt (`SKY-RUN-003`)
+
+Controleer huidig verbruik:
+
+```sh
+sky budget
+sky budget --per-workflow
+```
+
+Verhoog de maandelijkse limiet in `~/.sky/config.yaml`:
+
+```yaml
+monthly_budget_usd: 100
+```
+
+Om afzonderlijke stappen te begrenzen, voeg `max_budget_usd` toe aan een node-configuratieblok.
+
+---
+
+## Worktree-fout / toegang geweigerd (`SKY-RUN-004`)
+
+Workflows met `isolation = "worktree"` maken een tijdelijke git worktree aan naast de repository. Dit vereist:
+
+- Een volledige git-repository (geen bare clone of shallow archief).
+- De gebruiker die `sky serve` uitvoert heeft schrijftoegang tot de map.
+
+**Oplossing:** Zorg dat `sky serve` wordt uitgevoerd als de gebruiker die eigenaar is van de repository.
+
+---
+
+## Databasefout bij opstarten (`SKY-DB-*`)
+
+`sky doctor` toont het geconfigureerde databasepad:
+
+```sh
+sky doctor
+```
+
+Als er al een ander `sky serve`-proces actief is, stop dat eerst — SQLite staat slechts één schrijver toe. Als de database beschadigd is, verplaats het oude bestand en voer `sky setup` uit om een nieuw te maken (dit wist de rungeschiedenis).
+
+---
+
+## WebSocket verbreekt verbinding in het dashboard
+
+Het dashboard op sandbox.skylence.be maakt automatisch opnieuw verbinding. Verbrekingen tijdens lange runs zijn normaal als je browser inactief wordt of het netwerk wordt onderbroken. De run gaat door op de server — maak opnieuw verbinding en het eventlog wordt opnieuw afgespeeld.
+
+---
+
+## Ongeautoriseerde fouten bij API-aanroepen (`SKY-AUTH-001`)
+
+`sky serve` vereist standaard een `Authorization`-header. Het dashboard stuurt dit automatisch mee. Als je de API handmatig aanroept of met een eigen client, zie [CLI-referentie](/nl/cli/) voor details over authenticatie. De `--insecure-auth`-vlag schakelt deze controle uit (alleen voor lokale ontwikkeling).
+
+---
+
+## TLS-fouten bij opstarten
+
+Als `tls_cert_file` en `tls_key_file` zijn geconfigureerd, moeten beide verwijzen naar geldige PEM-bestanden. Slechts één instellen veroorzaakt een fatale opstartfout.
+
+**Oplossing:** Stel beide in of geen van beide. Zie [Configuratie](/nl/configuration/#tls).
+
+---
+
+## Nog steeds vastgelopen?
+
+- `sky doctor` — toont huidige configuratie, isolatiemodus en map van de beheerde Claude-omgeving.
+- `sky logs` — toont de 20 meest recente runs met status.
+- `sky logs <run-id>` — volledig eventlog voor één run.
+- [Foutcodes](/nl/error-codes/) — elke foutcode met beschrijving en oplossing.

@@ -1,0 +1,119 @@
+---
+title: Troubleshooting
+description: Common problems and how to fix them.
+---
+
+## `claude: command not found`
+
+Skylence runs `claude` as a subprocess. If `sky serve` or `sky run` reports this error, the Claude Code CLI is not in your PATH.
+
+**Fix:** Run `sky setup` — it checks whether `claude` and `gh` are reachable. If they are not, install Claude Code and confirm `claude --version` works in a fresh terminal before starting the daemon.
+
+See [Error Codes](/error-codes/) — `SKY-CL-001`.
+
+---
+
+## Webhook received but no workflow starts
+
+Check these four things in order:
+
+1. **Label match** — the `trigger.github.label` in your `.sky` file must exactly match the label you added. Labels are case-sensitive.
+2. **HMAC secret** — if the webhook secret in `~/.sky/.env` doesn't match the one configured on GitHub, every incoming webhook is rejected with `SKY-WH-001`. Regenerate with `sky webhook register`.
+3. **Workflow valid** — run `sky lint`. An invalid workflow is skipped silently at load time. Lint errors are reported on startup but easy to miss.
+4. **Daemon running** — `sky serve` must be running and reachable at the URL registered on GitHub.
+
+---
+
+## Workflow starts but fails immediately
+
+Run `sky logs <run-id>` to see the full event log for that run.
+
+| Code | Cause | Fix |
+|------|-------|-----|
+| `SKY-WF-001` | Workflow file could not be parsed | Run `sky lint` for details |
+| `SKY-WF-002` | Required field missing in `⊕meta⊕` | Check [Workflow Format](/workflow-format/) |
+| `SKY-CL-003` | `claude` exited non-zero immediately | Run `claude --version`; try manually |
+| `SKY-RUN-002` | Dependency cycle in `depends_on` | Check for circular node references |
+
+---
+
+## A step is running for a long time
+
+This is usually expected. Opus with `effort = "max"` on a large codebase can take several minutes. Check `sky logs <run-id>` — events stream in while the run is still in progress, so you can see what it is doing.
+
+If no events appear at all after the first few seconds, the `claude` subprocess may have hung. Stop the daemon, restart with `sky serve`, and resume the run:
+
+```sh
+sky run <workflow-name> --resume <run-id>
+```
+
+---
+
+## Budget limit reached (`SKY-RUN-003`)
+
+Check current spend:
+
+```sh
+sky budget
+sky budget --per-workflow
+```
+
+Increase the monthly cap in `~/.sky/config.yaml`:
+
+```yaml
+monthly_budget_usd: 100
+```
+
+To cap individual steps, add `max_budget_usd` to a node's `§` config block.
+
+---
+
+## Worktree error / permission denied (`SKY-RUN-004`)
+
+Workflows with `isolation = "worktree"` create a temporary git worktree alongside the repository. This requires:
+
+- A proper git repository (not a bare clone or a shallow archive).
+- The user running `sky serve` has write access to the directory.
+
+**Fix:** Make sure `sky serve` runs as the user who owns the repository.
+
+---
+
+## Database error at startup (`SKY-DB-*`)
+
+`sky doctor` shows the configured database path:
+
+```sh
+sky doctor
+```
+
+If another `sky serve` process is already running, stop it first — SQLite allows only one writer. If the database is corrupted, move the old file aside and run `sky setup` to create a fresh one (this loses run history).
+
+---
+
+## WebSocket disconnects in the dashboard
+
+The dashboard at sandbox.skylence.be reconnects automatically. Disconnects during long runs are normal if your browser goes idle or the network is interrupted. The run continues on the server — reconnect and the event log replays from the beginning.
+
+---
+
+## Unauthorized errors in API calls (`SKY-AUTH-001`)
+
+`sky serve` requires an `Authorization` header by default. The dashboard sends this automatically. If you are calling the API manually or with a custom client, see [CLI Reference](/cli/) for details on authentication. The `--insecure-auth` flag disables this check (local development only).
+
+---
+
+## TLS errors at startup
+
+If `tls_cert_file` and `tls_key_file` are configured, both must point to valid PEM files. Setting only one causes a fatal startup error.
+
+**Fix:** Set both or neither. See [Configuration](/configuration/#tls).
+
+---
+
+## Still stuck?
+
+- `sky doctor` — prints current config, isolation mode, and managed Claude environment path.
+- `sky logs` — lists the 20 most recent runs with status.
+- `sky logs <run-id>` — full event log for a single run.
+- [Error Codes](/error-codes/) — every error code with a description and resolution.

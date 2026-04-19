@@ -35,8 +35,8 @@ Het implementeert geen LLM. Het roept de `claude` CLI-binary aan die je apart in
 
 ## Hoe het werkt
 
-1. **GitHub verstuurt een webhook** naar `sky serve`. De HMAC-handtekening wordt geverifieerd; het event wordt gematcht met geladen workflowtriggers.
-2. **Runner bouwt een DAG** op basis van de nodedefinities van de gematchte workflow en bepaalt de uitvoeringsvolgorde via `depends_on`.
+1. **GitHub verstuurt een webhook** naar `sky serve`. Een cryptografische handtekening (HMAC) wordt geverifieerd om te bevestigen dat het verzoek echt van GitHub afkomstig is; het event wordt vervolgens gematcht met geladen workflowtriggers.
+2. **Runner bouwt een workflowgraph** (DAG — elke stap wacht op zijn opgegeven afhankelijkheden vóór het starten) op basis van de nodedefinities van de gematchte workflow en bepaalt de uitvoeringsvolgorde via `depends_on`.
 3. **Elke node wordt op volgorde uitgevoerd.** Prompt/command-nodes roepen `claude` aan; bash-nodes voeren een shellcommando uit; http-nodes bellen een externe URL. Node-outputs worden opgeslagen in SQLite en doorgegeven aan volgende nodes als `$node.output`.
 4. **Events stromen via WebSocket** naar verbonden SPA-clients in real time.
 5. **Resultaten worden opgeslagen** in `~/.sky/sky.db`. `sky logs` leest uit deze store.
@@ -48,14 +48,14 @@ Het implementeert geen LLM. Het roept de `claude` CLI-binary aan die je apart in
 | CLI | Cobra-gebaseerde ingangspunten voor alle `sky`-commando's |
 | HTTP-server | REST API + WebSocket hub |
 | Workflow-engine | `.sky`-parser, loader, validator |
-| Runner | DAG-executor, isolatieresolver, budgetgate |
+| Runner | Workflowgraph (DAG)-executor, isolatieresolver, budgetgate |
 | Claude-brug | `claude` CLI-subprocesswrapper + stream-json-parser |
 | Store | SQLite-persistentie voor runs, stappen en budgetledger |
 | WebSocket hub | Zendt run-events uit naar verbonden SPA-clients in real time |
 | Webhook-ontvanger | GitHub webhook-ingress met HMAC-verificatie en replaybeveiliging |
 | Router | Matcht inkomende events aan workflowtriggers |
 | Config | `.env` + configuratiebestand + omgevingsvariabelen laden met prioriteit |
-| Rate limiter | Per-IP token bucket voor API-, webhook- en WebSocket-eindpunten |
+| Rate limiter | Per-IP limiter (token bucket — korte pieken toegestaan, aanhoudend hoog verkeer afgevlakt) voor API-, webhook- en WebSocket-eindpunten |
 | Metrics | Prometheus-expositie (opt-in) |
 
 ## Ontwerpkeuzes

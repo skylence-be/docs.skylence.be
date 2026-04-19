@@ -44,6 +44,11 @@ export default defineConfig({
                     slug: 'faq',
                 },
                 {
+                    label: 'Examples',
+                    translations: { nl: 'Voorbeelden' },
+                    autogenerate: { directory: 'examples' },
+                },
+                {
                     label: 'Workflow Format',
                     translations: { nl: 'Workflow-formaat' },
                     autogenerate: { directory: 'workflow-format' },
@@ -62,6 +67,11 @@ export default defineConfig({
                     label: 'Architecture',
                     translations: { nl: 'Architectuur' },
                     autogenerate: { directory: 'architecture' },
+                },
+                {
+                    label: 'Troubleshooting',
+                    translations: { nl: 'Probleemoplossing' },
+                    autogenerate: { directory: 'troubleshooting' },
                 },
                 {
                     label: 'Error Codes',

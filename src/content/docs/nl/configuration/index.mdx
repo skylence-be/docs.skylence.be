@@ -68,7 +68,7 @@ bridge_tls_key_file: "/etc/sky/tls/key.pem"
 
 ## Snelheidsbeperking
 
-Per-IP token bucket, afzonderlijk toegepast op API-, webhook- en WebSocket-eindpunten. Stel RPS in op `0` of minder om die limiter uit te schakelen. Burst moet `>= 1` zijn wanneer RPS positief is.
+Per-IP-limiter, afzonderlijk toegepast op API-, webhook- en WebSocket-eindpunten. Er wordt een token bucket gebruikt — korte pieken zijn toegestaan, maar aanhoudend hoog verkeer wordt afgevlakt. Stel RPS in op `0` of minder om een limiter uit te schakelen. Burst moet `>= 1` zijn wanneer RPS positief is.
 
 ## Metrics
 

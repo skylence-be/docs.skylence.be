@@ -1,0 +1,264 @@
+---
+title: Voorbeelden
+description: Kant-en-klare workflowbestanden voor veelvoorkomende automatiseringsscenario's.
+---
+
+Dit zijn gebruiksklare `.sky`-workflowbestanden. Plaats ze in `.sky/workflows/` in je repository en voeg het bijbehorende label toe aan een GitHub-issue of pull request om ze te activeren.
+
+Voer `sky lint` uit om een workflow te valideren vóór het committen.
+
+## GitHub-issue oplossen
+
+**Trigger:** Voeg label `ready-for-sky` toe aan een issue.
+
+Classificeert het issue, implementeert een oplossing in een geïsoleerde branch, voert tests uit en opent een concept-pull request.
+
+```
+⊕meta⊕
+name = "fix-github-issue"
+description = "Classificeer issue → implementeer → test → open concept-PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "ready-for-sky"
+⊕⊕
+
+§classify§
+model = "haiku"
+§§
+
+∆classify∆
+Classificeer GitHub-issue #{{issue.number}}: {{issue.title}}
+
+Inhoud: {{issue.body}}
+
+Geef ALLEEN geldige JSON terug — geen andere tekst:
+{"issue_type": "bug|feature|enhancement|refactor|chore", "reasoning": "<één zin>"}
+∆∆
+
+§implement§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+depends_on = ["classify"]
+§§
+
+∆implement∆
+Los issue #{{issue.number}} op: {{issue.title}}
+
+Type: $classify.output.issue_type
+
+{{issue.body}}
+
+Implementeer de oplossing. Voer `make test` uit na wijzigingen. Commit met verwijzing naar #{{issue.number}}. Push: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test"
+depends_on = ["implement"]
+§§
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test"]
+§§
+
+∆create-pr∆
+Maak een concept-pull request aan voor issue #{{issue.number}}: {{issue.title}}.
+
+Testuitvoer: $test.output
+
+1. Controleer of alle wijzigingen gecommit zijn: `git status`
+2. Push indien nodig: `git push -u origin HEAD`
+3. Aanmaken: `gh pr create --draft --title "<imperatieve titel onder 70 tekens>" --body "Closes #{{issue.number}}"`
+∆∆
+```
+
+## Pull request beoordelen
+
+**Trigger:** Voeg label `sky-review` toe aan een pull request.
+
+Analyseert de diff, voert relevante reviewcontroles uit (codekwaliteit, foutafhandeling, testdekking) en produceert een gegroepeerd bevindingenoverzicht.
+
+```
+⊕meta⊕
+name = "smart-pr-review"
+description = "Classificeer PR → voer reviewagents uit → vat bevindingen samen"
+trigger.github.events = ["pull_request.labeled"]
+trigger.github.label = "sky-review"
+⊕⊕
+
+§classify§
+model = "haiku"
+§§
+
+∆classify∆
+Analyseer PR #{{pull_request.number}}: {{pull_request.title}}
+
+Voer uit: `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Geef ALLEEN geldige JSON terug — geen andere tekst:
+{"run_code_review": "true|false", "run_error_handling": "true|false", "run_test_coverage": "true|false", "reasoning": "<kort>"}
+∆∆
+
+§code-review§
+model = "sonnet"
+depends_on = ["classify"]
+chain_from = "classify"
+when = "$classify.output.run_code_review == 'true'"
+§§
+
+∆code-review∆
+Beoordeel PR #{{pull_request.number}}: {{pull_request.title}}
+
+Voer uit: `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Controleer correctheid, randgevallen, projectconventies en beveiliging.
+Lijst bevindingen op: ernst (critical/major/minor), bestand:regel, wat te verbeteren.
+Concludeer: LGTM, LGTM met kleine opmerkingen of NEEDS CHANGES.
+∆∆
+
+§synthesize§
+model = "sonnet"
+depends_on = ["code-review"]
+§§
+
+∆synthesize∆
+Vat de reviewbevindingen samen voor PR #{{pull_request.number}}.
+
+Code review: $code-review.output
+
+Groepeer op ernst:
+- CRITICAL: moet worden opgelost vóór mergen
+- MAJOR: zou moeten worden opgelost vóór mergen
+- MINOR: niet-blokkerend
+
+Als er geen zijn: "LGTM — no fixes required."
+∆∆
+```
+
+## Een geschreven plan implementeren
+
+**Trigger:** Voeg label `sky-implement` toe aan een issue.
+
+De issueinhoud dient als implementatieplan. Skylence voert het stap voor stap uit in een geïsoleerde branch, voert tests uit en opent een concept-pull request.
+
+```
+⊕meta⊕
+name = "plan-to-pr"
+description = "Voer plan uit vanuit issue-inhoud → test → open concept-PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky-implement"
+⊕⊕
+
+§implement§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+§§
+
+∆implement∆
+Voer het implementatieplan uit voor issue #{{issue.number}}: {{issue.title}}
+
+Plan:
+{{issue.body}}
+
+Volg het plan stap voor stap. Voer `make test` uit na elke logische groep wijzigingen. Los fouten op vóór je verdergaat. Commit met verwijzing naar #{{issue.number}}. Push: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test"
+depends_on = ["implement"]
+§§
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test"]
+§§
+
+∆create-pr∆
+Maak een concept-pull request aan voor issue #{{issue.number}}: {{issue.title}}.
+
+Testuitvoer: $test.output
+
+1. Bevestig gecommit: `git status`
+2. Push indien nodig: `git push -u origin HEAD`
+3. Aanmaken: `gh pr create --draft --title "<imperatieve titel>" --body "Closes #{{issue.number}}"`
+∆∆
+```
+
+## Veilige refactoring
+
+**Trigger:** Voeg label `sky-refactor` toe aan een issue.
+
+Leest de codebase, plant een geordende refactoring zonder gedragswijzigingen, voert elke stap uit in een geïsoleerde branch, verifieert dat het gedrag behouden is en opent een concept-pull request.
+
+```
+⊕meta⊕
+name = "refactor-safely"
+description = "Analyseer → plan → voer uit in worktree → verifieer gedragsbehoud → PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky-refactor"
+⊕⊕
+
+§analyze§
+model = "opus"
+effort = "max"
+§§
+
+∆analyze∆
+Analyseer de codebase voor de refactoring in issue #{{issue.number}}: {{issue.title}}
+
+{{issue.body}}
+
+Alleen-lezen analyse — maak nog GEEN wijzigingen.
+
+1. Identificeer doelbestanden en -functies.
+2. Breng alle aanroeplocaties in kaart in de codebase.
+3. Zoek bestaande tests voor de doelcode.
+4. Identificeer risico's: gedeelde state, geëxporteerde symbolen, module-level bijwerkingen.
+5. Stel een veilige herorganisatiestrategie voor met onderbouwing.
+
+Produceer een gestructureerd analyserapport.
+∆∆
+
+§execute§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+depends_on = ["analyze"]
+chain_from = "analyze"
+§§
+
+∆execute∆
+Voer de refactoring uit voor issue #{{issue.number}}: {{issue.title}}
+
+Analyse: $analyze.output
+
+Regels:
+- Geen logische wijzigingen — alleen structurele herorganisatie, gedrag behouden.
+- Voer `make test` uit na elke stap. Los fouten op vóór je verdergaat.
+- Commit na elke logische taak.
+- Push wanneer gereed: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test"
+depends_on = ["execute"]
+§§
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test"]
+§§
+
+∆create-pr∆
+Maak een concept-pull request aan voor de refactoring in issue #{{issue.number}}: {{issue.title}}.
+
+Testuitvoer: $test.output
+
+1. Bevestig gecommit: `git status`
+2. Push indien nodig: `git push -u origin HEAD`
+3. `gh pr create --draft`
+   - Titel: `refactor: <beschrijving>` onder 70 tekens
+   - Inhoud: wat is hergestructureerd en waarom, dat gedrag behouden is, `Closes #{{issue.number}}`
+∆∆
+```
