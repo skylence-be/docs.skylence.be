@@ -1,0 +1,26 @@
+---
+title: FAQ
+description: Frequently asked questions about Skylence.
+---
+
+## What is Skylence?
+
+Skylence is a Claude Code harness builder. It listens for GitHub webhook events, matches them to workflow definitions, and runs each step by shelling out to the `claude` CLI — streaming results over WebSocket to connected clients.
+
+## Does Skylence run Claude itself?
+
+No. Skylence shells out to the `claude` CLI binary. You must have `claude` installed and in your `PATH`.
+
+## What do I need to run Skylence?
+
+- Go 1.22+
+- `claude` CLI in `PATH`
+- A GitHub webhook pointed at your Skylence instance
+
+## Where do I define workflows?
+
+In `.sky/workflows/*.sky` files in your repository. Run `./bin/sky lint` to validate them.
+
+## Is there a UI?
+
+Yes — a separate SvelteKit SPA ([skylence.be](https://github.com/skylence-be/skylence.be)) connects to any running daemon via `?server=<url>`.
