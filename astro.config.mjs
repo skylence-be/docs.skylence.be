@@ -34,6 +34,11 @@ export default defineConfig({
                     slug: 'getting-started',
                 },
                 {
+                    label: 'FAQ',
+                    translations: { nl: 'Veelgestelde vragen' },
+                    slug: 'faq',
+                },
+                {
                     label: 'Workflow Format',
                     translations: { nl: 'Workflow-formaat' },
                     autogenerate: { directory: 'workflow-format' },
