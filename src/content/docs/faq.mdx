@@ -17,12 +17,12 @@ No. Skylence shells out to the `claude` CLI binary. You must have `claude` insta
 - `claude` CLI in `PATH`
 - A GitHub webhook pointed at your Skylence instance
 
-Go 1.22+ is only required on the **build machine**, not at runtime.
+Go 1.26+ is only required on the **build machine**, not at runtime.
 
 ## Where do I define workflows?
 
-In `.sky/workflows/*.sky` files in your repository. Run `./bin/sky lint` to validate them.
+In `.sky/workflows/*.sky` files in your repository. Run `sky lint` to validate them.
 
 ## Is there a UI?
 
-Yes — a separate SvelteKit SPA ([skylence.be](https://github.com/skylence-be/skylence.be)) connects to any running daemon via `?server=<url>`.
+Yes — a separate SvelteKit SPA ([sandbox.skylence.be](https://sandbox.skylence.be)) connects to any running daemon via `?server=<url>`.

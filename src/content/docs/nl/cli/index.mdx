@@ -1,6 +1,206 @@
 ---
 title: CLI-referentie
-description: sky serve, sky run, sky logs, sky lint, sky setup.
+description: sky serve, sky run, sky logs, sky lint, sky setup, sky update, sky budget, sky doctor, sky codebase, sky webhook, sky sentry.
 ---
 
-Documentatie volgt binnenkort.
+## sky serve
+
+Start de daemon.
+
+```sh
+sky serve [vlaggen]
+```
+
+| Vlag | Beschrijving |
+|------|--------------|
+| `--insecure-auth` | Schakel authenticatie uit (enkel voor ontwikkeling) |
+| `--insecure-webhook` | Sla HMAC-verificatie over op inkomende webhooks |
+
+Bindadres, TLS en alle andere netwerkinstellingen komen uit de configuratie. Zie [Configuratie](/nl/configuration/).
+
+---
+
+## sky run
+
+Voer een workflow handmatig uit zonder een webhook-event.
+
+```sh
+sky run <workflow-naam> [vlaggen]
+```
+
+| Vlag | Beschrijving |
+|------|--------------|
+| `--repo <pad>` | Pad naar de repository |
+| `--issue <n>` | Issue-nummer — injecteer als `issue.*`-variabelen |
+| `--pr <n>` | PR-nummer — injecteer als `pr.*`-variabelen |
+| `--resume <run-id>` | Hervat een gepauzeerde of mislukte run |
+| `--dry-run` | Parseer en valideer de workflow zonder uit te voeren |
+| `--format <json\|text>` | Uitvoerformaat (standaard: `text`) |
+| `--var key=value` | Stel een extra templatevariabele in; herhaalbaar |
+
+---
+
+## sky logs
+
+Toon recente runs.
+
+```sh
+sky logs [run-id]
+```
+
+Zonder argumenten: toont de 20 meest recente runs met status en tijdstempel. Met een run-ID: toont het volledige eventlog voor die run.
+
+---
+
+## sky lint
+
+Valideer alle `.sky`-workflowbestanden in de huidige repository.
+
+```sh
+sky lint
+```
+
+Controleert op structuurfouten, onbekende sleutels, onveilige bash-patronen en injectierisico's. Sluit af met niet-nul als een regel wordt getriggerd. Voer dit uit vóór het committen van workflowwijzigingen.
+
+---
+
+## sky setup
+
+Initialiseer Skylence op een nieuwe machine.
+
+```sh
+sky setup
+```
+
+Maakt `~/.sky/` aan (datamap + SQLite-database), zaait de beheerde Claude-omgeving in op `~/.sky/claude-env/`, en meldt of `claude` en `gh` beschikbaar zijn in je `PATH`.
+
+---
+
+## sky update
+
+Controleer op een nieuwe `sky`-release of installeer deze.
+
+```sh
+sky update [vlaggen]
+```
+
+| Vlag | Beschrijving |
+|------|--------------|
+| `--check` | Controleer op een nieuwe versie zonder te installeren |
+| `--to <versie>` | Installeer een specifieke versie |
+| `-y` | Sla bevestigingsprompt over |
+
+---
+
+## sky budget
+
+Toon huidig verbruik ten opzichte van geconfigureerde limieten.
+
+```sh
+sky budget [vlaggen]
+```
+
+| Vlag | Beschrijving |
+|------|--------------|
+| `--per-workflow` | Verdeel verbruik per workflownaam |
+
+Totalen worden gemeten tegen `monthly_budget_usd` uit de configuratie. Zie [Configuratie](/nl/configuration/).
+
+---
+
+## sky doctor
+
+Toon de huidige runtimeconfiguratie voor debugging.
+
+```sh
+sky doctor
+```
+
+Toont: isolatiemodus, authenticatiebron, beheerde Claude-omgevingsmap en actieve systeemprompt. Nuttig om te verifiëren dat configuratie en omgevingsvariabelen correct worden toegepast.
+
+---
+
+## sky codebase
+
+Beheer het codebase-register. Codebases zijn benoemde repository-paden die workflows kunnen raadplegen.
+
+```sh
+sky codebase <subcommando> [vlaggen]
+```
+
+### add
+
+```sh
+sky codebase add --name <naam> --cwd <pad> [--repo-url <url>] [--branch <branch>]
+```
+
+| Vlag | Beschrijving |
+|------|--------------|
+| `--name <naam>` | Unieke naam voor deze codebase (verplicht) |
+| `--cwd <pad>` | Lokaal pad naar de repository-root (verplicht) |
+| `--repo-url <url>` | URL van de remote repository |
+| `--branch <branch>` | Standaard branch |
+
+### list
+
+```sh
+sky codebase list
+```
+
+Toont alle geregistreerde codebases.
+
+### show
+
+```sh
+sky codebase show <naam>
+```
+
+Toont details voor één codebase-entry.
+
+---
+
+## sky webhook
+
+Beheer GitHub-webhooks op remote repositories.
+
+```sh
+sky webhook <subcommando> [vlaggen]
+```
+
+Token-volgorde: `--token`-vlag → `$GITHUB_TOKEN`-omgevingsvariabele → `gh auth token`.
+
+### register
+
+```sh
+sky webhook register --repo owner/naam --url <url> [--token <token>]
+```
+
+Maakt de webhook aan op GitHub en schrijft `SKY_GITHUB_SECRET` naar `~/.sky/.env`. Start `sky serve` opnieuw op om het nieuwe secret te laden.
+
+### update
+
+```sh
+sky webhook update --repo owner/naam --url <url> [--token <token>]
+```
+
+Werkt de payload-URL bij op een bestaande webhook.
+
+### delete
+
+```sh
+sky webhook delete --repo owner/naam [--token <token>]
+```
+
+Verwijdert de webhook van GitHub.
+
+---
+
+## sky sentry
+
+Test de Sentry-integratie voor foutrapportage.
+
+```sh
+sky sentry test
+```
+
+Verstuurt een testevent naar de geconfigureerde `sentry_dsn`. Vereist dat `sentry_dsn` is ingesteld in de configuratie. Sluit af met niet-nul als de DSN ontbreekt of de verzending mislukt.

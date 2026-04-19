@@ -9,3 +9,35 @@ hero:
       link: /nl/getting-started/
       icon: right-arrow
 ---
+
+## Wat is Skylence?
+
+Skylence is een Claude Code harness. Het luistert naar GitHub webhook-events, matcht ze aan workflowdefinities en voert elke stap uit via de `claude` CLI — met real-time streaming over WebSocket naar verbonden clients.
+
+Je schrijft workflows als `.sky`-bestanden in je repository. Skylence regelt de rest: trigger-matching, DAG-uitvoering, budgetbewaking en live observeerbaarheid.
+
+## Hoe het werkt
+
+1. Een GitHub-event (issue gelabeld, PR geopend, …) triggert een bijpassende workflow.
+2. Skylence voert elke node in afhankelijkheidsvolgorde uit — Claude aanroepen, shellcommando's uitvoeren of HTTP-verzoeken doen.
+3. Elke stap wordt live gestreamd en lokaal opgeslagen. Niets verlaat je machine.
+
+## Mogelijkheden
+
+- **Gestructureerde workflows** — definieer meerstaps-DAGs met afhankelijkheden, condities en loops in `.sky`-bestanden.
+- **Claude-native** — gebruikt `claude` CLI-sessies, MCP-configuratie en isolatievlaggen direct.
+- **Kostenbeheer** — uitgavenlimieten per node en per maand, gehandhaafd voordat Claude wordt aangeroepen.
+- **Veiligheid bij parseren** — `sky lint` detecteert injectierisico's en schemafouten voordat een workflow start.
+- **Lokaal-eerst** — geen account, geen cloud-backend. State opgeslagen in SQLite op je eigen machine.
+- **Live streaming** — run-events stromen via WebSocket naar de [sandbox.skylence.be](https://sandbox.skylence.be) SPA.
+
+## Verder gaan
+
+| | |
+|---|---|
+| [Installatie](/nl/installation/) | Installeer de `sky` binary |
+| [Aan de slag](/nl/getting-started/) | Voer je eerste workflow uit |
+| [Workflow-formaat](/nl/workflow-format/) | Leer het `.sky`-bestandsformaat |
+| [CLI-referentie](/nl/cli/) | Alle commando's en vlaggen |
+| [Configuratie](/nl/configuration/) | Configuratiebestand en env vars |
+| [Architectuur](/nl/architecture/) | Hoe de onderdelen samenhangen |

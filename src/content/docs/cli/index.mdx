@@ -1,6 +1,206 @@
 ---
 title: CLI Reference
-description: sky serve, sky run, sky logs, sky lint, sky setup.
+description: sky serve, sky run, sky logs, sky lint, sky setup, sky update, sky budget, sky doctor, sky codebase, sky webhook, sky sentry.
 ---
 
-Documentation coming soon.
+## sky serve
+
+Start the daemon.
+
+```sh
+sky serve [flags]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--insecure-auth` | Disable authentication (development only) |
+| `--insecure-webhook` | Skip HMAC signature verification on incoming webhooks |
+
+Bind address, TLS, and all other network settings come from config. See [Configuration](/configuration/).
+
+---
+
+## sky run
+
+Run a workflow manually without a webhook event.
+
+```sh
+sky run <workflow-name> [flags]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--repo <path>` | Path to the repository to run in |
+| `--issue <n>` | Issue number to inject as `issue.*` variables |
+| `--pr <n>` | PR number to inject as `pr.*` variables |
+| `--resume <run-id>` | Resume a previously paused or failed run |
+| `--dry-run` | Parse and validate the workflow without executing |
+| `--format <json\|text>` | Output format (default: `text`) |
+| `--var key=value` | Set an extra template variable; repeatable |
+
+---
+
+## sky logs
+
+List recent runs.
+
+```sh
+sky logs [run-id]
+```
+
+Without arguments: lists the 20 most recent runs with status and timestamp. With a run ID: prints the full event log for that run.
+
+---
+
+## sky lint
+
+Validate all `.sky` workflow files in the current repository.
+
+```sh
+sky lint
+```
+
+Checks for structural errors, unknown keys, unsafe bash patterns, and injection-risk shapes. Exits non-zero if any rule fires. Run before committing workflow changes.
+
+---
+
+## sky setup
+
+Initialize Skylence on a new machine.
+
+```sh
+sky setup
+```
+
+Creates `~/.sky/` (data directory + SQLite database), seeds the managed Claude environment at `~/.sky/claude-env/`, and reports whether `claude` and `gh` are in your `PATH`.
+
+---
+
+## sky update
+
+Check for or apply a new `sky` release.
+
+```sh
+sky update [flags]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--check` | Check for a newer version without installing |
+| `--to <version>` | Install a specific version |
+| `-y` | Skip confirmation prompt |
+
+---
+
+## sky budget
+
+Show current spend against configured limits.
+
+```sh
+sky budget [flags]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--per-workflow` | Break down spend by workflow name |
+
+Totals are measured against `monthly_budget_usd` from config. See [Configuration](/configuration/).
+
+---
+
+## sky doctor
+
+Print current runtime configuration for debugging.
+
+```sh
+sky doctor
+```
+
+Outputs: isolation mode, authentication source, managed Claude environment directory, and active system prompt. Useful for verifying that config and env vars are applied correctly.
+
+---
+
+## sky codebase
+
+Manage the codebase registry. Codebases are named repository paths that workflows can reference.
+
+```sh
+sky codebase <subcommand> [flags]
+```
+
+### add
+
+```sh
+sky codebase add --name <name> --cwd <path> [--repo-url <url>] [--branch <branch>]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--name <name>` | Unique name for this codebase (required) |
+| `--cwd <path>` | Local path to the repository root (required) |
+| `--repo-url <url>` | Remote repository URL |
+| `--branch <branch>` | Default branch |
+
+### list
+
+```sh
+sky codebase list
+```
+
+Lists all registered codebases.
+
+### show
+
+```sh
+sky codebase show <name>
+```
+
+Prints details for a single codebase entry.
+
+---
+
+## sky webhook
+
+Manage GitHub webhooks on remote repositories.
+
+```sh
+sky webhook <subcommand> [flags]
+```
+
+Token resolution order: `--token` flag → `$GITHUB_TOKEN` env var → `gh auth token`.
+
+### register
+
+```sh
+sky webhook register --repo owner/name --url <url> [--token <token>]
+```
+
+Creates the webhook on GitHub and writes `SKY_GITHUB_SECRET` to `~/.sky/.env`. Restart `sky serve` to pick up the new secret.
+
+### update
+
+```sh
+sky webhook update --repo owner/name --url <url> [--token <token>]
+```
+
+Updates the payload URL on an existing webhook.
+
+### delete
+
+```sh
+sky webhook delete --repo owner/name [--token <token>]
+```
+
+Removes the webhook from GitHub.
+
+---
+
+## sky sentry
+
+Test Sentry error reporting integration.
+
+```sh
+sky sentry test
+```
+
+Sends a test error event to the configured `sentry_dsn`. Requires `sentry_dsn` to be set in config. Exits non-zero if the DSN is missing or the delivery fails.

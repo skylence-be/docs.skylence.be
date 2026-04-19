@@ -3,4 +3,84 @@ title: Configuration
 description: Config file, env vars, and precedence rules.
 ---
 
-Documentation coming soon.
+## Precedence
+
+Later sources override earlier ones:
+
+```
+defaults → ~/.sky/.env → ~/.sky/config.yaml → environment variables
+```
+
+Copy `.env.example` to `.env` for local secrets (e.g. `SKY_GITHUB_SECRET`). Never commit `.env`.
+
+## Config file
+
+`~/.sky/config.yaml` uses YAML key-value pairs matching the setting names below:
+
+```yaml
+listen_addr: "0.0.0.0:3090"
+log_level: "info"
+log_format: "json"
+monthly_budget_usd: 50
+update_check_on_start: true
+```
+
+## Settings
+
+| Setting | Env var | Default |
+|---------|---------|---------|
+| `listen_addr` | `SKY_LISTEN_ADDR` | `127.0.0.1:3090` |
+| `bridge_addr` | `SKY_BRIDGE_ADDR` | `127.0.0.1:4747` |
+| `database_path` | `SKY_DATABASE_PATH` | `~/.sky/sky.db` |
+| `github_secret` | `SKY_GITHUB_SECRET` | |
+| `claude_binary` | `SKY_CLAUDE_BINARY` | `claude` |
+| `tls_cert_file` | `SKY_TLS_CERT_FILE` | |
+| `tls_key_file` | `SKY_TLS_KEY_FILE` | |
+| `bridge_tls_cert_file` | `SKY_BRIDGE_TLS_CERT_FILE` | |
+| `bridge_tls_key_file` | `SKY_BRIDGE_TLS_KEY_FILE` | |
+| `rate_limit_api_rps` | `SKY_RATE_LIMIT_API_RPS` | `20` |
+| `rate_limit_api_burst` | `SKY_RATE_LIMIT_API_BURST` | `40` |
+| `rate_limit_webhook_rps` | `SKY_RATE_LIMIT_WEBHOOK_RPS` | `5` |
+| `rate_limit_webhook_burst` | `SKY_RATE_LIMIT_WEBHOOK_BURST` | `10` |
+| `rate_limit_ws_rps` | `SKY_RATE_LIMIT_WS_RPS` | `2` |
+| `rate_limit_ws_burst` | `SKY_RATE_LIMIT_WS_BURST` | `5` |
+| `log_level` | `SKY_LOG_LEVEL` | `info` |
+| `log_format` | `SKY_LOG_FORMAT` | `text` |
+| `metrics_enabled` | `SKY_METRICS_ENABLED` | `true` |
+| `metrics_bind_addr` | `SKY_METRICS_BIND_ADDR` | |
+| `shutdown_timeout` | `SKY_SHUTDOWN_TIMEOUT` | `30` |
+| `update_check_on_start` | `SKY_UPDATE_CHECK_ON_START` | `false` |
+| `monthly_budget_usd` | — | |
+| `sentry_dsn` | `SKY_SENTRY_DSN` | |
+| `sentry_environment` | `SKY_SENTRY_ENVIRONMENT` | `development` |
+
+## TLS
+
+TLS is opt-in per listener. Set both cert and key (PEM paths) to enable HTTPS; setting only one errors at startup.
+
+```yaml
+# Main API + WebSocket listener
+tls_cert_file: "/etc/sky/tls/cert.pem"
+tls_key_file: "/etc/sky/tls/key.pem"
+
+# Bridge listener (port 4747)
+bridge_tls_cert_file: "/etc/sky/tls/cert.pem"
+bridge_tls_key_file: "/etc/sky/tls/key.pem"
+```
+
+## Rate limiting
+
+Per-IP token bucket applied independently to API, webhook, and WebSocket endpoints. Set RPS to `0` or less to disable that limiter. Burst must be `>= 1` when RPS is positive.
+
+## Sentry
+
+Set `sentry_dsn` to enable error reporting. Panics from HTTP handlers, tracked goroutines, and unhandled command errors report to Sentry. Test with:
+
+```sh
+sky sentry test
+```
+
+## Metrics
+
+When `metrics_enabled` is `true` (default), a Prometheus exposition endpoint is available. Set `metrics_bind_addr` to expose it on a dedicated address (e.g. `127.0.0.1:9091`); leave empty to serve it on the main listener.
+
