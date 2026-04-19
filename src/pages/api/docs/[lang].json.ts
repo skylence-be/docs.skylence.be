@@ -18,14 +18,18 @@ export const GET: APIRoute = async ({ params }) => {
     .filter(entry =>
       lang === 'en' ? !isNl(entry.id) : isNl(entry.id)
     )
-    .map(entry => ({
-      slug: entry.id.replace(/^[a-z]{2}(\/|$)/, '') || 'index',
-      title: entry.data.title,
-      description: entry.data.description ?? null,
-      unlisted: entry.data.unlisted ?? false,
-      icon: entry.data.icon ?? null,
-      lang,
-    }));
+    .map(entry => {
+      const slug = entry.id.replace(/^[a-z]{2}(\/|$)/, '') || 'index';
+      return {
+        slug,
+        title: entry.data.title,
+        description: entry.data.description ?? null,
+        unlisted: entry.data.unlisted ?? false,
+        icon: entry.data.icon ?? null,
+        url: entry.data.link ?? `${lang === 'nl' ? '/nl' : ''}/${slug}/`,
+        lang,
+      };
+    });
 
   return new Response(JSON.stringify(entries), {
     headers: { 'Content-Type': 'application/json' },
