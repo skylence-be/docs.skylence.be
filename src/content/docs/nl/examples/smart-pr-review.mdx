@@ -1,0 +1,161 @@
+---
+title: Pull request beoordelen
+description: Classificeer PR-complexiteit, route naar parallelle reviewagents, synthetiseer bevindingen, push verbeteringen.
+sidebar:
+  order: 2
+---
+
+Gebruik dit wanneer een pull request een grondige review nodig heeft, of wanneer je een second opinion wil vóór het mergen. De workflow leest de diff en routeert naar alleen de reviewagents die van toepassing zijn — een docs-only wijziging slaat de code review agent volledig over; een wijziging die foutafhandeling raakt krijgt een aparte foutafhandeling-pass bovenop de standaard code review.
+
+Bevindingen worden gegroepeerd per ernst (CRITICAL / MAJOR / MINOR) en als verbeteringen direct op de PR-branch gepusht vóór je merget.
+
+**Trigger:** Voeg label `sky-review` toe aan pull request.
+
+**Wat het doet:**
+
+1. **Classificeer** (Haiku) — analyseert diff, bepaalt welke reviewcontroles van toepassing zijn.
+2. **Reviewagents** (Sonnet, parallel) — code review, foutafhandeling, testdekking lopen alleen wanneer relevant.
+3. **Synthetiseer** (Sonnet) — consolideert bevindingen per ernst.
+4. **Verbeter** (Opus) — checkt PR-branch uit, verhelpt elk CRITICAL en MAJOR bevinding.
+
+```
+⊕meta⊕
+name = "smart-pr-review"
+description = "Adaptive PR review: classify → route to agents → synthesize → fix"
+trigger.github.events = ["pull_request.labeled"]
+trigger.github.label = "sky-review"
+output_style = "terse"
+⊕⊕
+
+§classify§
+model = "haiku"
+§§
+
+∆classify∆
+Analyze PR #{{pull_request.number}}: {{pull_request.title}}
+
+Run: `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Routing diagram (Mermaid):
+flowchart LR
+    diff[PR diff] --> classify[Classify what to check]
+    classify -->|run_code_review=true| code_review[code-review node]
+    classify -->|run_error_handling=true| error_handling[error-handling node]
+    classify -->|run_test_coverage=true| test_coverage[test-coverage node]
+    code_review --> synthesize[synthesize node]
+    error_handling --> synthesize
+    test_coverage --> synthesize
+    synthesize --> fix[fix node]
+
+Rules:
+- run_code_review: "true" unless diff is empty or non-code only.
+- run_error_handling: "true" if diff touches error handling or changes error returns.
+- run_test_coverage: "true" if diff modifies source files (not just tests, docs, or config).
+- complexity: "trivial" (typo/format), "small" (1-3 files), "medium" (4-10 files), "large" (10+ or architectural).
+
+Output ONLY valid JSON:
+{"run_code_review": "true|false", "run_error_handling": "true|false", "run_test_coverage": "true|false", "complexity": "trivial|small|medium|large", "reasoning": "<brief>"}
+∆∆
+
+§code-review§
+model = "sonnet"
+depends_on = ["classify"]
+chain_from = "classify"
+when = "$classify.output.run_code_review == 'true'"
+§§
+
+∆code-review∆
+Review PR #{{pull_request.number}}: {{pull_request.title}}
+
+Run `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Check:
+1. Correctness — off-by-one, nil dereferences, race conditions?
+2. Edge cases — what inputs or states could break this?
+3. Conventions — matches adjacent code patterns?
+4. Security — injection, path traversal, auth bypass?
+
+List findings: severity (critical/major/minor), file:line, what to fix.
+Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
+∆∆
+
+§error-handling§
+model = "sonnet"
+depends_on = ["classify"]
+chain_from = "classify"
+when = "$classify.output.run_error_handling == 'true'"
+§§
+
+∆error-handling∆
+Review error handling in PR #{{pull_request.number}}.
+
+Run `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Check:
+1. All errors handled — not silently swallowed?
+2. Error messages specific enough for debugging?
+3. Cleanup (defer, close, rollback) correct on all failure paths?
+4. Any error leave state inconsistent or cause panic?
+
+List findings: severity, file:line, what to fix.
+∆∆
+
+§test-coverage§
+model = "sonnet"
+depends_on = ["classify"]
+chain_from = "classify"
+when = "$classify.output.run_test_coverage == 'true'"
+§§
+
+∆test-coverage∆
+Review test coverage in PR #{{pull_request.number}}.
+
+Run `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
+
+Check:
+1. New/changed code paths covered?
+2. Edge cases tested (empty inputs, boundary values, error paths)?
+3. Tests assert behavior, not just exercise code?
+
+List gaps: severity, what to add/fix.
+∆∆
+
+§synthesize§
+model = "sonnet"
+depends_on = ["code-review", "error-handling", "test-coverage"]
+trigger_rule = "one_success"
+§§
+
+∆synthesize∆
+Synthesize review findings for PR #{{pull_request.number}}: {{pull_request.title}}
+
+Code review: $code-review.output
+Error handling: $error-handling.output
+Test coverage: $test-coverage.output
+
+Group by severity:
+- CRITICAL: must fix before merging
+- MAJOR: should fix before merging
+- MINOR: non-blocking
+
+If no issues: "LGTM — no fixes required."
+∆∆
+
+§fix§
+model = "opus"
+effort = "max"
+depends_on = ["synthesize"]
+§§
+
+∆fix∆
+Fix CRITICAL and MAJOR findings in PR #{{pull_request.number}}: {{pull_request.title}}
+
+Findings: $synthesize.output
+
+1. Checkout branch: `git fetch origin && git checkout {{pull_request.head.ref}}`
+2. Fix CRITICAL and MAJOR. Fix MINOR if trivial.
+3. Run `make test`.
+4. Commit and push: `git push origin {{pull_request.head.ref}}`
+5. If "LGTM — no fixes required", confirm and stop.
+∆∆
+```

@@ -1,0 +1,281 @@
+---
+title: GitHub-issue oplossen
+description: Classificeer issue, implementeer oplossing in worktree, multi-agent review, zelf verbeteren, concept-PR openen.
+sidebar:
+  order: 1
+---
+
+Gebruik dit wanneer je wil dat Skylence een issue uit je backlog oppakt en de volledige engineeringcyclus afhandelt — het probleem begrijpen, code schrijven, tests draaien en een pull request openen — zonder dat jij iets hoeft te doen behalve een label toevoegen.
+
+De workflow is adaptief: hij detecteert of het issue een bug of een feature is en kiest de juiste aanpak. Bugs krijgen eerst een root-cause onderzoek. Features krijgen een implementatieplan. Beide doorlopen een meervoudige code review voordat de PR wordt aangemaakt, en kritieke bevindingen worden automatisch verholpen.
+
+**Trigger:** Voeg label `ready-for-sky` toe aan issue.
+
+**Wat het doet:**
+
+1. **Classificeer** (Haiku) — bepaalt type: bug / feature / enhancement.
+2. **Onderzoek of plan** (Opus) — root-cause analyse voor bugs; implementatieplan voor features.
+3. **Implementeer** (Opus, geïsoleerde worktree) — voert oplossing of plan uit, draait tests, commit, pusht.
+4. **Test** (bash) — draait `make test` als verificatiepoort.
+5. **Review** (Haiku routeert → Sonnet-agents) — code review, foutafhandeling, testdekking lopen parallel op basis van diff-inhoud.
+6. **Synthetiseer** (Sonnet) — consolideert bevindingen per ernst.
+7. **Zelf verbeteren** (Opus) — verhelpt alle CRITICAL en MAJOR bevindingen.
+8. **PR aanmaken** (Sonnet) — opent concept-pull request.
+
+```
+⊕meta⊕
+name = "fix-github-issue"
+description = "Fix GitHub issue: classify → investigate/plan → implement → test → adaptive review → self-fix → PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "ready-for-sky"
+output_style = "terse"
+⊕⊕
+
+§classify§
+model = "haiku"
+§§
+
+∆classify∆
+Classify issue #{{issue.number}}.
+
+Title: {{issue.title}}
+Body: {{issue.body}}
+
+Workflow (Mermaid):
+flowchart TD
+    in[Issue received] --> classify[Classify type]
+    classify -->|bug| investigate[investigate node]
+    classify -->|feature or enhancement| plan[plan node]
+    investigate --> implement[implement in worktree]
+    plan --> implement
+    implement --> test[make test]
+    test --> review[review agents in parallel]
+    review --> synthesize[synthesize findings]
+    synthesize --> self_fix[self-fix CRITICAL and MAJOR]
+    self_fix --> pr[create draft PR]
+
+Classification:
+- bug: broken behavior, error, crash, regression
+- feature: new capability, net-new
+- enhancement: improve existing behavior
+- refactor: cleanup, reorganize
+- chore: dependencies, CI/CD, maintenance
+- documentation: docs, readme, examples
+
+Output ONLY valid JSON:
+{"issue_type": "<type>", "reasoning": "<one sentence>"}
+∆∆
+
+§investigate§
+model = "opus"
+effort = "max"
+depends_on = ["classify"]
+when = "$classify.output.issue_type == 'bug'"
+§§
+
+∆investigate∆
+Issue #{{issue.number}}: {{issue.title}}
+Type: bug — $classify.output.reasoning
+
+{{issue.body}}
+
+Investigate bug:
+1. Trace code path to failure.
+2. Find root cause: exact file, function, line.
+3. Check nearby code for related issues.
+4. Propose minimal safe fix.
+5. Identify tests to add or update.
+
+Produce structured investigation report. No implementation yet.
+∆∆
+
+§plan§
+model = "opus"
+effort = "max"
+depends_on = ["classify"]
+when = "$classify.output.issue_type != 'bug'"
+§§
+
+∆plan∆
+Issue #{{issue.number}}: {{issue.title}}
+Type: $classify.output.issue_type — $classify.output.reasoning
+
+{{issue.body}}
+
+Create implementation plan:
+1. List files needing change and why.
+2. Per file: approach, risks, edge cases.
+3. Define test strategy.
+4. Note breaking changes.
+5. Order changes to minimize risk.
+
+Produce structured plan. No implementation yet.
+∆∆
+
+§implement§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+depends_on = ["investigate", "plan"]
+trigger_rule = "one_success"
+§§
+
+∆implement∆
+Issue #{{issue.number}}: {{issue.title}}
+
+Investigation (if bug): $investigate.output
+Plan (if feature/enhancement): $plan.output
+
+Execute:
+- Make changes. Run `make test` after each logical group. Fix failures.
+- Commit changes referencing #{{issue.number}}.
+- Push: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test"
+depends_on = ["implement"]
+§§
+
+§review-classify§
+model = "haiku"
+depends_on = ["implement"]
+chain_from = "implement"
+§§
+
+∆review-classify∆
+Analyze implementation branch. Decide which review agents to run.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Rules:
+- run_error_handling: "true" if diff touches error handling or changes error returns.
+- run_test_coverage: "true" if diff modifies source files (not just tests or docs).
+- run_docs_impact: "true" if diff adds/removes public APIs, CLI flags, env vars, or config keys.
+
+Output ONLY valid JSON:
+{"run_error_handling": "true|false", "run_test_coverage": "true|false", "run_docs_impact": "true|false", "reasoning": "<brief>"}
+∆∆
+
+§code-review§
+model = "sonnet"
+depends_on = ["review-classify"]
+chain_from = "review-classify"
+§§
+
+∆code-review∆
+Review implementation for issue #{{issue.number}}: {{issue.title}}.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Check:
+1. Correctness — solves issue? Off-by-one, nil dereferences, race conditions?
+2. Edge cases — what inputs or states could break this?
+3. Conventions — matches adjacent code patterns?
+4. Security — injection, path traversal, auth bypass?
+
+List findings: severity (critical/major/minor), file:line, what to fix.
+Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
+∆∆
+
+§error-handling§
+model = "sonnet"
+depends_on = ["review-classify"]
+chain_from = "review-classify"
+when = "$review-classify.output.run_error_handling == 'true'"
+§§
+
+∆error-handling∆
+Review error handling for issue #{{issue.number}}.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Check:
+1. All errors handled — not silently swallowed?
+2. Error messages specific enough for debugging?
+3. Cleanup (defer, close, rollback) correct on all failure paths?
+
+List findings: severity, file:line, what to fix.
+∆∆
+
+§test-coverage§
+model = "sonnet"
+depends_on = ["review-classify"]
+chain_from = "review-classify"
+when = "$review-classify.output.run_test_coverage == 'true'"
+§§
+
+∆test-coverage∆
+Review test coverage for issue #{{issue.number}}.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Check:
+1. New/changed code paths covered?
+2. Edge cases tested (empty inputs, boundary values, error paths)?
+3. Tests assert behavior, not just exercise code?
+
+List gaps: severity, what to add/fix.
+∆∆
+
+§synthesize§
+model = "sonnet"
+depends_on = ["code-review", "error-handling", "test-coverage"]
+trigger_rule = "one_success"
+§§
+
+∆synthesize∆
+Synthesize review findings for issue #{{issue.number}}.
+
+Code review: $code-review.output
+Error handling: $error-handling.output
+Test coverage: $test-coverage.output
+
+Group by severity:
+- CRITICAL: must fix before merging
+- MAJOR: should fix before merging
+- MINOR: non-blocking
+
+If no issues: "LGTM — no fixes required."
+∆∆
+
+§self-fix§
+model = "opus"
+effort = "max"
+depends_on = ["synthesize", "implement"]
+chain_from = "implement"
+§§
+
+∆self-fix∆
+Fix CRITICAL and MAJOR findings for issue #{{issue.number}}.
+
+Findings: $synthesize.output
+
+Continue from implementation branch. Run `git fetch origin && git checkout <branch>` if needed.
+
+- Fix CRITICAL and MAJOR. Fix MINOR if trivial.
+- Run `make test`. Commit and push.
+- If "LGTM — no fixes required", confirm and stop.
+∆∆
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test", "self-fix"]
+trigger_rule = "all_done"
+§§
+
+∆create-pr∆
+Create PR for issue #{{issue.number}}: {{issue.title}}.
+
+Type: $classify.output.issue_type
+Test: $test.output
+Review: $synthesize.output
+
+1. Confirm committed: `git status`
+2. Push if needed: `git push -u origin HEAD`
+3. Check existing: `gh pr list --head $(git branch --show-current)`
+4. Create draft: `gh pr create --draft`
+   - Title: imperative, under 70 chars
+   - Body: summary, `Closes #{{issue.number}}`, review summary
+∆∆
+```

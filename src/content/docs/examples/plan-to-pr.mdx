@@ -1,0 +1,165 @@
+---
+title: Implement from Plan
+description: Treat issue body as implementation plan — execute step by step, test, open draft PR.
+sidebar:
+  order: 3
+---
+
+Use this when you have already figured out what needs to happen and want Skylence to execute it. Write the implementation plan in the issue body — as detailed or as high-level as you like — then add the label and walk away.
+
+The issue body is passed verbatim to Opus. Be specific: name files, functions, and expected behavior. The more detail you provide, the more predictable the result.
+
+**Trigger:** Add label `sky-implement` to issue.
+
+**What it does:**
+
+1. **Implement** (Opus, isolated worktree) — reads issue body as plan, executes each task, runs `make test` after each group.
+2. **Test** (bash) — runs `make test` as final verification gate.
+3. **Review** (Haiku routes → Sonnet agents) — adaptive review based on diff contents.
+4. **Self-fix** (Opus) — fixes all CRITICAL and MAJOR findings.
+5. **Create PR** (Sonnet) — opens draft pull request.
+
+Write plan in issue body before adding label. Be specific: list files, functions, changes.
+
+```
+⊕meta⊕
+name = "plan-to-pr"
+description = "Execute plan from issue body: implement → test → adaptive review → self-fix → PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky-implement"
+output_style = "terse"
+⊕⊕
+
+§implement§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+§§
+
+∆implement∆
+Execute plan for issue #{{issue.number}}: {{issue.title}}
+
+Plan:
+{{issue.body}}
+
+Execution loop (Mermaid):
+flowchart TD
+    plan[Read task from plan] --> change[Make change]
+    change --> test[make test]
+    test -->|pass| commit[Commit with issue ref]
+    test -->|fail| fix[Fix failure]
+    fix --> test
+    commit -->|more tasks| plan
+    commit -->|done| push[git push -u origin HEAD]
+
+Per task:
+- Make change.
+- Run `make test`. Fix failures before continuing.
+- Commit referencing #{{issue.number}}.
+
+Push on completion: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test"
+depends_on = ["implement"]
+§§
+
+§review-classify§
+model = "haiku"
+depends_on = ["implement"]
+chain_from = "implement"
+§§
+
+∆review-classify∆
+Analyze implementation branch. Decide which review agents to run.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Rules:
+- run_error_handling: "true" if diff touches error handling or changes error returns.
+- run_test_coverage: "true" if diff modifies source files (not just tests or docs).
+- run_docs_impact: "true" if diff adds/removes public APIs, CLI flags, env vars, or config keys.
+
+Output ONLY valid JSON:
+{"run_error_handling": "true|false", "run_test_coverage": "true|false", "run_docs_impact": "true|false", "reasoning": "<brief>"}
+∆∆
+
+§code-review§
+model = "sonnet"
+depends_on = ["review-classify"]
+chain_from = "review-classify"
+§§
+
+∆code-review∆
+Review implementation for issue #{{issue.number}}: {{issue.title}}
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Check:
+1. Matches plan? Off-by-one, nil dereferences, race conditions?
+2. Edge cases — what inputs or states could break this?
+3. Conventions — matches adjacent code patterns?
+4. Security — injection, path traversal, auth bypass?
+
+List findings: severity (critical/major/minor), file:line, what to fix.
+Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
+∆∆
+
+§synthesize§
+model = "sonnet"
+depends_on = ["code-review"]
+§§
+
+∆synthesize∆
+Synthesize review findings for issue #{{issue.number}}.
+
+Code review: $code-review.output
+
+Group by severity:
+- CRITICAL: must fix before merging
+- MAJOR: should fix before merging
+- MINOR: non-blocking
+
+If no issues: "LGTM — no fixes required."
+∆∆
+
+§self-fix§
+model = "opus"
+effort = "max"
+depends_on = ["synthesize", "implement"]
+chain_from = "implement"
+§§
+
+∆self-fix∆
+Fix CRITICAL and MAJOR findings for issue #{{issue.number}}.
+
+Findings: $synthesize.output
+
+Continue from implementation branch. Run `git fetch origin && git checkout <branch>` if needed.
+
+- Fix CRITICAL and MAJOR. Fix MINOR if trivial.
+- Run `make test`. Commit and push.
+- If "LGTM — no fixes required", confirm and stop.
+∆∆
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test", "self-fix"]
+trigger_rule = "all_done"
+§§
+
+∆create-pr∆
+Create PR for issue #{{issue.number}}: {{issue.title}}
+
+Test: $test.output
+Review: $synthesize.output
+
+1. Confirm committed: `git status`
+2. Push if needed: `git push -u origin HEAD`
+3. Check existing: `gh pr list --head $(git branch --show-current)`
+4. Create draft: `gh pr create --draft`
+   - Title: imperative, under 70 chars
+   - Body: summary, `Closes #{{issue.number}}`, review summary
+∆∆
+```

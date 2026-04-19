@@ -1,0 +1,156 @@
+---
+title: Safe Refactor
+description: Analyze impact, execute structural changes in worktree, verify behavior preserved, open draft PR.
+sidebar:
+  order: 4
+---
+
+Use this for any structural reorganization where you need a guarantee that behavior is not changed. The workflow enforces a strict separation: analysis and planning happen before any code is touched, and a dedicated verification step checks the final diff for logic changes.
+
+Useful for splitting large files, extracting packages, or reorganizing module boundaries without the risk of accidentally changing behavior.
+
+**Trigger:** Add label `sky-refactor` to issue.
+
+**What it does:**
+
+1. **Analyze** (Opus, read-only) — maps call sites, identifies risks, proposes safe reorganization strategy. No changes.
+2. **Plan** (Opus) — ordered task list where each step compiles and passes tests before next begins.
+3. **Execute** (Opus, isolated worktree) — structural moves only, no logic changes.
+4. **Test** (bash) — runs `make test && go vet ./...`.
+5. **Verify** (Sonnet) — confirms no logic changes slipped in.
+6. **Create PR** (Sonnet) — opens draft PR noting behavior is preserved.
+
+Describe target files and goal in issue body before adding label.
+
+```
+⊕meta⊕
+name = "refactor-safely"
+description = "Safe refactor: analyze → plan → execute → test → verify behavior → PR"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "sky-refactor"
+output_style = "terse"
+⊕⊕
+
+§analyze§
+model = "opus"
+effort = "max"
+§§
+
+∆analyze∆
+Analyze codebase for refactoring in issue #{{issue.number}}: {{issue.title}}
+
+Request: {{issue.body}}
+
+Pipeline (Mermaid):
+flowchart TD
+    request[Refactor request] --> files[Identify target files and functions]
+    files --> callsites[Map all call sites]
+    callsites --> risks[Identify risks: shared state, exports, side effects]
+    risks --> tests[Find existing tests for target code]
+    tests --> strategy[Propose safe reorganization strategy]
+    strategy --> plan[plan node]
+    plan --> execute[execute in worktree]
+    execute -->|no logic changes| test[make test]
+    test --> verify[verify behavior preserved]
+    verify --> pr[create draft PR]
+
+Read-only analysis — NO changes yet.
+
+1. Identify target files and functions from request.
+2. Read each target file — understand every function, type, export.
+3. Map call sites: grep for every import/usage across codebase.
+4. Identify risks: shared state, module-level side effects, exported symbols.
+5. Find existing tests for target code.
+6. Propose reorganization strategy with rationale.
+
+Produce structured report: target files, dependency map, risk assessment, test coverage, recommended approach.
+∆∆
+
+§plan§
+model = "opus"
+effort = "max"
+depends_on = ["analyze"]
+chain_from = "analyze"
+§§
+
+∆plan∆
+Create ordered refactoring plan for issue #{{issue.number}}: {{issue.title}}
+
+Analysis: $analyze.output
+
+Principles:
+- No logic changes — structural reorganization only.
+- Incremental: each step compiles and tests pass before next begins.
+- Public API preserved: exported symbols stay at same import paths.
+- No mixing with bug fixes or new features.
+
+Produce ordered task list. Each task: specific (what to move where), independent (compiles alone), verifiable (states what test output confirms done).
+∆∆
+
+§execute§
+model = "opus"
+effort = "max"
+isolation = "worktree"
+depends_on = ["plan"]
+chain_from = "plan"
+§§
+
+∆execute∆
+Execute refactoring plan for issue #{{issue.number}}: {{issue.title}}
+
+Plan: $plan.output
+
+Rules:
+- Follow plan exactly. No extra improvements or cleanups.
+- One task at time. Complete fully before starting next.
+- Run `make test && go vet ./...` after each task. Fix failures immediately.
+- Moving code only — no logic changes.
+- Commit after each task describing structural change.
+- Push on completion: `git push -u origin HEAD`.
+∆∆
+
+§test§
+bash = "make test && go vet ./..."
+depends_on = ["execute"]
+§§
+
+§verify§
+model = "sonnet"
+depends_on = ["execute"]
+chain_from = "execute"
+§§
+
+∆verify∆
+Verify refactoring preserved exact behavior for issue #{{issue.number}}.
+
+Run `git fetch origin && git diff origin/main...HEAD`.
+
+Verify:
+1. New/moved files: functions match originals — no logic changes.
+2. Original files: re-exports exist for all previously exported symbols.
+3. Import sites updated correctly.
+4. No module-level state or side effects added or removed.
+
+Report: BEHAVIOR PRESERVED or list logic changes found.
+∆∆
+
+§create-pr§
+model = "sonnet"
+depends_on = ["test", "verify"]
+trigger_rule = "all_done"
+§§
+
+∆create-pr∆
+Create PR for refactoring in issue #{{issue.number}}: {{issue.title}}
+
+Test: $test.output
+Verification: $verify.output
+
+1. Confirm committed: `git status`
+2. Push if needed: `git push -u origin HEAD`
+3. Check existing: `gh pr list --head $(git branch --show-current)`
+4. Create draft: `gh pr create --draft`
+   - Title: `refactor: <description>` under 70 chars
+   - Body: what restructured, why, behavior preserved, `Closes #{{issue.number}}`
+∆∆
+```

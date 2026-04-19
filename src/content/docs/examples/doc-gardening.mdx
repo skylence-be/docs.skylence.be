@@ -1,0 +1,111 @@
+---
+title: Doc Gardening
+description: Scan docs for stale content, flag broken references, open tracking issue with checklist.
+sidebar:
+  order: 6
+---
+
+Use this to audit your documentation for staleness without reading through everything manually. The workflow checks each doc against the current codebase and flags three kinds of problems: references to symbols or files that no longer exist, quality grades that don't match the actual code state, and execution plans that have been completed but not archived.
+
+The output is a GitHub tracking issue with a checklist — one item per stale doc. If everything is clean, no issue is opened.
+
+Run this periodically — monthly, or after a large refactor.
+
+**Trigger:** Add label `doc-garden` to any issue (manual trigger).
+
+**What it does:**
+
+1. **Scan** (bash) — lists all docs with last-commit date.
+2. **Inventory** (Opus) — reads docs older than 90 days, cross-checks against codebase, flags broken references/outdated grades/finished plans.
+3. **Report** (Sonnet) — opens tracking issue with findings checklist, or stops if scan is clean.
+
+```
+⊕meta⊕
+name = "doc-gardening"
+description = "Scan docs/ for staleness; open tracking issue with findings"
+trigger.github.events = ["issues.labeled"]
+trigger.github.label = "doc-garden"
+output_style = "terse"
+⊕⊕
+
+§scan§
+bash = "git ls-files 'docs/*.md' 'docs/**/*.md' | xargs -n1 -I F git log -1 --format='%cs F' -- F | sort; echo '---ACTIVE-PLANS---'; git ls-files 'docs/exec-plans/active/*' 2>/dev/null || true; echo '---TODAY---'; date -u +%Y-%m-%d"
+§§
+
+§inventory§
+model = "opus"
+effort = "max"
+depends_on = ["scan"]
+§§
+
+∆inventory∆
+Produce doc-staleness report from scan output.
+
+Scan output (format: "YYYY-MM-DD path", then markers):
+$scan.output
+
+Analysis flow (Mermaid):
+flowchart TD
+    scan[Scan: dates and paths] --> filter[Filter docs older than 90 days]
+    filter --> read[Read each old doc]
+    read --> crosscheck[Cross-check with codebase]
+    crosscheck -->|symbol gone| broken[broken-reference]
+    crosscheck -->|grade wrong| outdated[outdated-grade]
+    crosscheck -->|plan done| finished[finished-plan]
+    crosscheck -->|still accurate| skip[Skip]
+    broken --> report[report node]
+    outdated --> report
+    finished --> report
+    report -->|findings| issue[Open tracking issue]
+    report -->|clean| stop[Stop]
+
+Per doc in scan:
+1. Read doc if last-commit more than 90 days before today.
+2. Skim recent git history for symbols, paths, flags doc references.
+3. Flag:
+   - broken-reference: cites symbol/path/flag no longer existing
+   - outdated-grade: QUALITY_SCORE grades contradict current state
+   - finished-plan: exec-plan in active/ has no open TODOs, older than 60 days
+   - stale-narrative: describes behavior contradicting how code works now
+
+Skip stable reference material.
+
+Output ONLY markdown findings section in exactly this format:
+
+## doc-gardening findings — <today>
+
+<N> docs flagged.
+
+| file | kind | evidence | suggested-action |
+|------|------|----------|------------------|
+| docs/path.md | broken-reference | L42: cites OldFn — renamed in abc | update reference |
+
+If zero findings:
+
+## doc-gardening findings — <today>
+
+clean — no stale docs detected.
+∆∆
+
+§report§
+model = "sonnet"
+depends_on = ["inventory"]
+§§
+
+∆report∆
+Open tracking issue with findings.
+
+Findings: $inventory.output
+
+Steps:
+1. If "clean — no stale docs detected": print "clean" and stop. No issue.
+2. Extract count and date from heading.
+3. Ensure label: `gh label create doc-gardening --description "Doc staleness tracking" --color C5DEF5 2>/dev/null || true`
+4. Create issue:
+   - Title: `doc-gardening: <N> stale docs found (<today>)`
+   - Body: findings table + checklist with one item per finding
+   - Label: `doc-gardening`
+   - Command: `gh issue create --title "..." --body "..." --label doc-gardening`
+5. Print issue URL.
+∆∆
+```
