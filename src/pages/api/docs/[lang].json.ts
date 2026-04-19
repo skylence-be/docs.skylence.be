@@ -23,6 +23,7 @@ export const GET: APIRoute = async ({ params }) => {
       title: entry.data.title,
       description: entry.data.description ?? null,
       unlisted: entry.data.unlisted ?? false,
+      icon: entry.data.icon ?? null,
       lang,
     }));
 
