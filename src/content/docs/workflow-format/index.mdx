@@ -1,50 +1,97 @@
 ---
 title: Workflow Format
 description: The .sky file format — meta, nodes, and prompts.
+sidebar:
+  order: 0
 ---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
 
 `.sky` files are Go-parsed workflow definitions. LLMs author them; humans review what the LLM wrote.
 
 Workflows live in `.sky/workflows/*.sky` in your repository.
 
-## Structure
+---
 
-Three Unicode delimiters carve a `.sky` file into sections:
+## How a .sky file is built
 
-| Delimiter | Read by | Purpose |
-|-----------|---------|---------|
-| `⊕meta⊕ ... ⊕⊕` | Go | Workflow identity, trigger config. Required, exactly one. |
-| `§<id>§ ... §§` | Go | Step config (model, deps, isolation, …). One per step in the workflow graph (DAG). |
-| `∆<id>∆ ... ∆∆` | Claude | Prompt body for node `<id>`. Paired with `§<id>§` by ID. |
+A `.sky` file is split into sections by three **Unicode delimiter characters** — chosen because they never appear in normal code or prose, so no escaping is needed.
 
-Every opener and closer must be alone on its own line. Execution order comes from `depends_on`; top-to-bottom order in the file is the default for nodes with no dependencies.
+Each delimiter wraps a named block. The name (the **id**) is what ties everything together: `§plan§` declares a step, and `∆plan∆` provides the instructions Claude will read for that exact step.
 
-## Example
+There are exactly three kinds of block:
 
-```
-⊕meta⊕
-name = "fix-github-issue"
-trigger.github.events = ["issues.labeled"]
-trigger.github.label = "ready-for-sky"
-⊕⊕
+<div class="sky-box sky-box-meta">
+  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="required · exactly one" variant="note" />
+  <p>The workflow header. Defines the name, what event triggers it, and global settings (MCP servers, budget caps). Go reads this. Claude does not.</p>
+</div>
 
-§plan§
-command = "plan"
-model = "opus"
-§§
+<div class="sky-box sky-box-step">
+  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> — <Badge text="one per step" variant="caution" />
+  <p>Step config block. Declares what model to use, which other steps this one depends on, whether to run in an isolated worktree, spend caps, and more. Go reads this to build the execution graph. Claude does not see these keys.</p>
+</div>
 
-§implement§
-command = "implement"
-depends_on = ["plan"]
-isolation = "worktree"
-§§
+<div class="sky-box sky-box-prompt">
+  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optional · paired by id" variant="tip" />
+  <p>Prompt body. This is what Claude actually reads. Paired to its step by the same id. Template variables like <code>{"{{issue.number}}"}</code> are substituted before Claude sees the text. No step config here — only instructions.</p>
+</div>
 
-∆implement∆
-Execute the plan. Run tests. Open a PR when green.
-∆∆
-```
+<Aside type="note" title="Execution order comes from depends_on">
+Top-to-bottom file order is the default for steps with no declared dependencies. Add `depends_on = ["step-id"]` to express a real ordering requirement. The runner builds a DAG and executes steps in parallel where possible.
+</Aside>
 
-## Node keys (`§` section)
+---
+
+## Color-coded anatomy
+
+Every opener and closer must appear **alone on its own line**.
+
+<div class="sky-file">
+  <span class="sky-sym">⊕meta⊕</span><br/>
+  <span class="sky-meta">name = "fix-github-issue"</span><br/>
+  <span class="sky-meta">trigger.github.events = ["issues.labeled"]</span><br/>
+  <span class="sky-meta">trigger.github.label = "ready-for-sky"</span><br/>
+  <span class="sky-sym">⊕⊕</span>
+  <br/><br/>
+  <span class="sky-sym">§</span><span class="sky-id">plan</span><span class="sky-sym">§</span><br/>
+  <span class="sky-step">command = "plan"</span><br/>
+  <span class="sky-step">model = "opus"</span><br/>
+  <span class="sky-sym">§§</span>
+  <br/><br/>
+  <span class="sky-sym">§</span><span class="sky-id">implement</span><span class="sky-sym">§</span><br/>
+  <span class="sky-step">command = "implement"</span><br/>
+  <span class="sky-step">depends_on = ["plan"]</span><br/>
+  <span class="sky-step">isolation = "worktree"</span><br/>
+  <span class="sky-sym">§§</span>
+  <br/><br/>
+  <span class="sky-sym">∆</span><span class="sky-id">implement</span><span class="sky-sym">∆</span><br/>
+  <span class="sky-prompt">Execute plan. Run tests. Open PR when green.</span><br/>
+  <span class="sky-sym">∆∆</span>
+</div>
+
+**Legend:**
+<span class="sky-sym">■</span> Blue = delimiter symbol &nbsp;
+<span class="sky-id">■</span> Purple = step id &nbsp;
+<span class="sky-meta">■</span> Magenta = meta body &nbsp;
+<span class="sky-step">■</span> Red = step config &nbsp;
+<span class="sky-prompt">■</span> Orange = prompt body
+
+---
+
+## What each section can contain
+
+### <span class="sky-sym">⊕meta⊕</span> — workflow identity
+
+| Key | Purpose |
+|-----|---------|
+| `name` | Unique workflow name (used in logs and run history) |
+| `trigger.github.events` | GitHub webhook event names that fire this workflow |
+| `trigger.github.label` | Label filter (issues/PRs only) |
+| `trigger.github.repo` | Restrict to specific repo (`owner/repo`) |
+| `max_budget_usd` | Global spend cap across all steps |
+| `mcp_servers` | MCP server map — merged with `~/.sky/claude-env/mcp.json` |
+
+### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> — step config
 
 `key = value` pairs, one per line. Values are JSON strings, numbers, booleans, `null`, or JSON arrays. Lines starting with `#` are comments.
 
@@ -54,18 +101,24 @@ Execute the plan. Run tests. Open a PR when green.
 | `prompt` | string | Inline prompt (also supplements `command`) |
 | `bash` | string | Shell command to run |
 | `http` | object | Outbound HTTP call config |
-| `eval` | object | Assertion on a prior node's output |
+| `eval` | object | Assertion on prior node output |
 | `loop` | object | Repeat body until condition passes |
 | `wait` | object | Pause for human approval or webhook |
-| `depends_on` | array | Node IDs this node waits for |
-| `when` | string | Condition expression — skip node if false |
+| `depends_on` | array | Step IDs this step waits for |
+| `when` | string | Condition expression — skip step if false |
 | `model` | string | Claude model: `sonnet`, `opus`, `haiku` |
 | `effort` | string | Claude effort level |
 | `isolation` | string | `worktree` — run in isolated git worktree |
-| `max_budget_usd` | number | Per-node spend cap |
+| `max_budget_usd` | number | Per-step spend cap |
 | `trigger_rule` | string | `all_done` (default), `all_success`, `one_success`, `one_failure` |
-| `chain_from` | string | Node ID whose Claude session to resume |
+| `chain_from` | string | Step ID whose Claude session to resume |
 | `output_format` | object | JSON schema for structured output |
+
+### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> — prompt body
+
+Free text. Claude reads this verbatim (after template variable substitution). No special key=value syntax — just instructions. Can span multiple paragraphs, include code snippets, Mermaid diagrams, or any other content that helps Claude understand the task.
+
+---
 
 ## Template variables
 
@@ -73,7 +126,7 @@ Use `{{var}}` in `∆` prompt bodies and `http` node configs to substitute webho
 
 ```
 ∆greet∆
-Say hello. The issue number is {{issue.number}} in {{repo.full_name}}.
+Say hello. Issue number is {{issue.number}} in {{repo.full_name}}.
 ∆∆
 ```
 
@@ -89,11 +142,13 @@ Say hello. The issue number is {{issue.number}} in {{repo.full_name}}.
 
 ### Bash nodes
 
-`{{var}}` is **not available** in `bash` or `loop.until.bash`. Webhook-derived variables reach bash through environment variables: `SKY_<UPPER_KEY>` (dots → underscores). Prior node outputs are available as `$SKY_OUTPUT_<NODE_ID>`. Always quote: `"$SKY_ISSUE_NUMBER"`.
+`{{var}}` is **not available** in `bash` or `loop.until.bash`. Webhook-derived variables reach bash through environment variables: `SKY_<UPPER_KEY>` (dots → underscores). Prior step outputs are available as `$SKY_OUTPUT_<STEP_ID>`. Always quote: `"$SKY_ISSUE_NUMBER"`.
+
+---
 
 ## MCP servers
 
-Expose MCP servers to all prompt/command nodes via `mcp_servers` in `⊕meta⊕`:
+Expose MCP servers to all prompt/command steps via `mcp_servers` in `⊕meta⊕`:
 
 ```
 ⊕meta⊕
@@ -103,6 +158,8 @@ mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
 ```
 
 The map merges with `~/.sky/claude-env/mcp.json`. Name collisions with managed servers abort the run.
+
+---
 
 ## Validation
 

@@ -1,0 +1,28 @@
+/* .sky file syntax color scheme */
+.sky-sym   { color: #60a5fa; font-weight: bold; }   /* delimiter symbols ⊕ § ∆   → blue  */
+.sky-meta  { color: #e879f9; }                       /* ⊕meta⊕ body               → magenta */
+.sky-step  { color: #f87171; }                       /* §node§ body               → red   */
+.sky-prompt{ color: #fb923c; }                       /* ∆node∆ body               → orange */
+.sky-id    { color: #a78bfa; font-style: italic; }   /* id inside delimiters       → purple */
+
+.sky-file {
+    font-family: var(--sl-font-mono, monospace);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    background: var(--sl-color-bg-sidebar);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+}
+
+/* Section purpose boxes */
+.sky-box {
+    border-left: 4px solid;
+    border-radius: 0 0.4rem 0.4rem 0;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+}
+.sky-box-meta   { border-color: #e879f9; background: #e879f910; }
+.sky-box-step   { border-color: #f87171; background: #f8717110; }
+.sky-box-prompt { border-color: #fb923c; background: #fb923c10; }

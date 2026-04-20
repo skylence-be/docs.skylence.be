@@ -2,13 +2,15 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLinksValidator from 'starlight-links-validator';
+import starlightClientMermaid from '@pasqal-io/starlight-client-mermaid';
 
 export default defineConfig({
     site: 'https://docs.skylence.be',
     integrations: [
         starlight({
             favicon: '/favicon.svg',
-            plugins: [starlightLinksValidator()],
+            plugins: [starlightLinksValidator(), starlightClientMermaid()],
+            customCss: ['./src/styles/sky-colors.css'],
             title: 'Skylence',
             description: 'Claude Code Harness — documentation',
             logo: {

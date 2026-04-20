@@ -1,50 +1,97 @@
 ---
 title: Workflow-formaat
 description: Het .sky bestandsformaat — meta, nodes en prompts.
+sidebar:
+  order: 0
 ---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
 
 `.sky`-bestanden zijn Go-geparseerde workflowdefinities. LLMs schrijven ze; mensen beoordelen wat de LLM heeft geschreven.
 
 Workflows staan in `.sky/workflows/*.sky` in je repository.
 
-## Structuur
+---
 
-Drie Unicode-scheidingstekens verdelen een `.sky`-bestand in secties:
+## Hoe een .sky-bestand is opgebouwd
 
-| Scheidingsteken | Gelezen door | Doel |
-|-----------------|--------------|------|
-| `⊕meta⊕ ... ⊕⊕` | Go | Workflow-identiteit, triggerconfiguratie. Verplicht, precies één. |
-| `§<id>§ ... §§` | Go | Stapconfiguratie (model, deps, isolatie, …). Één per stap in de workflowgraph (DAG). |
-| `∆<id>∆ ... ∆∆` | Claude | Prompttekst voor node `<id>`. Gekoppeld aan `§<id>§` via ID. |
+Een `.sky`-bestand wordt opgedeeld in secties door drie **Unicode-scheidingstekens** — gekozen omdat ze nooit voorkomen in normale code of tekst, zodat escaping niet nodig is.
 
-Elke opener en closer moet alleen op zijn eigen regel staan. Uitvoeringsvolgorde komt van `depends_on`; de volgorde van boven naar onder in het bestand is de standaard voor nodes zonder afhankelijkheden.
+Elk scheidingsteken omsluit een benoemd blok. De naam (het **id**) is wat alles aan elkaar koppelt: `§plan§` declareert een stap, en `∆plan∆` geeft de instructies die Claude voor precies die stap leest.
 
-## Voorbeeld
+Er zijn precies drie soorten blok:
 
-```
-⊕meta⊕
-name = "fix-github-issue"
-trigger.github.events = ["issues.labeled"]
-trigger.github.label = "ready-for-sky"
-⊕⊕
+<div class="sky-box sky-box-meta">
+  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="verplicht · precies één" variant="note" />
+  <p>De workflow-header. Definieert de naam, welke gebeurtenis hem triggert en globale instellingen (MCP-servers, budgetlimieten). Go leest dit. Claude niet.</p>
+</div>
 
-§plan§
-command = "plan"
-model = "opus"
-§§
+<div class="sky-box sky-box-step">
+  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> — <Badge text="één per stap" variant="caution" />
+  <p>Stapconfiguratieblok. Declareert welk model te gebruiken, van welke andere stappen deze afhangt, of in een geïsoleerde worktree wordt uitgevoerd, budgetlimieten en meer. Go leest dit om de uitvoeringsgraph te bouwen. Claude ziet deze sleutels niet.</p>
+</div>
 
-§implement§
-command = "implement"
-depends_on = ["plan"]
-isolation = "worktree"
-§§
+<div class="sky-box sky-box-prompt">
+  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optioneel · gekoppeld via id" variant="tip" />
+  <p>Prompttekst. Dit is wat Claude daadwerkelijk leest. Gekoppeld aan zijn stap via hetzelfde id. Templatevariabelen zoals <code>{"{{issue.number}}"}</code> worden vervangen voordat Claude de tekst ziet. Geen stapconfig hier — alleen instructies.</p>
+</div>
 
-∆implement∆
-Voer het plan uit. Voer tests uit. Open een PR wanneer alles groen is.
-∆∆
-```
+<Aside type="note" title="Uitvoeringsvolgorde komt van depends_on">
+Volgorde van boven naar onder is de standaard voor stappen zonder gedeclareerde afhankelijkheden. Voeg `depends_on = ["stap-id"]` toe om een echte volgorde te vereisen. De runner bouwt een DAG en voert stappen parallel uit waar mogelijk.
+</Aside>
 
-## Node-sleutels (`§`-sectie)
+---
+
+## Kleurgecodeerde anatomie
+
+Elke opener en closer moet **alleen op zijn eigen regel** staan.
+
+<div class="sky-file">
+  <span class="sky-sym">⊕meta⊕</span><br/>
+  <span class="sky-meta">name = "fix-github-issue"</span><br/>
+  <span class="sky-meta">trigger.github.events = ["issues.labeled"]</span><br/>
+  <span class="sky-meta">trigger.github.label = "ready-for-sky"</span><br/>
+  <span class="sky-sym">⊕⊕</span>
+  <br/><br/>
+  <span class="sky-sym">§</span><span class="sky-id">plan</span><span class="sky-sym">§</span><br/>
+  <span class="sky-step">command = "plan"</span><br/>
+  <span class="sky-step">model = "opus"</span><br/>
+  <span class="sky-sym">§§</span>
+  <br/><br/>
+  <span class="sky-sym">§</span><span class="sky-id">implement</span><span class="sky-sym">§</span><br/>
+  <span class="sky-step">command = "implement"</span><br/>
+  <span class="sky-step">depends_on = ["plan"]</span><br/>
+  <span class="sky-step">isolation = "worktree"</span><br/>
+  <span class="sky-sym">§§</span>
+  <br/><br/>
+  <span class="sky-sym">∆</span><span class="sky-id">implement</span><span class="sky-sym">∆</span><br/>
+  <span class="sky-prompt">Voer plan uit. Voer tests uit. Open PR wanneer groen.</span><br/>
+  <span class="sky-sym">∆∆</span>
+</div>
+
+**Legenda:**
+<span class="sky-sym">■</span> Blauw = scheidingsteken &nbsp;
+<span class="sky-id">■</span> Paars = stap-id &nbsp;
+<span class="sky-meta">■</span> Magenta = meta-inhoud &nbsp;
+<span class="sky-step">■</span> Rood = stapconfig &nbsp;
+<span class="sky-prompt">■</span> Oranje = prompttekst
+
+---
+
+## Wat elke sectie kan bevatten
+
+### <span class="sky-sym">⊕meta⊕</span> — workflow-identiteit
+
+| Sleutel | Doel |
+|---------|------|
+| `name` | Unieke workflownaam (gebruikt in logs en runhistorie) |
+| `trigger.github.events` | GitHub-webhookgebeurtenissen die deze workflow activeren |
+| `trigger.github.label` | Labelfilter (alleen issues/PR's) |
+| `trigger.github.repo` | Beperken tot specifieke repo (`owner/repo`) |
+| `max_budget_usd` | Globale budgetlimiet voor alle stappen |
+| `mcp_servers` | MCP-servermap — samengevoegd met `~/.sky/claude-env/mcp.json` |
+
+### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> — stapconfig
 
 `key = value`-paren, één per regel. Waarden zijn JSON-strings, getallen, booleans, `null` of JSON-arrays. Regels die beginnen met `#` zijn commentaar.
 
@@ -54,18 +101,24 @@ Voer het plan uit. Voer tests uit. Open een PR wanneer alles groen is.
 | `prompt` | string | Inline prompt (vult ook `command` aan) |
 | `bash` | string | Uit te voeren shellcommando |
 | `http` | object | Configuratie voor uitgaande HTTP-call |
-| `eval` | object | Bewering op de output van een eerdere node |
+| `eval` | object | Bewering op output van eerdere stap |
 | `loop` | object | Herhaal body totdat conditie slaagt |
 | `wait` | object | Pauzeer voor menselijke goedkeuring of webhook |
-| `depends_on` | array | Node-ID's waarop deze node wacht |
-| `when` | string | Conditie-expressie — sla node over als onwaar |
+| `depends_on` | array | Stap-ID's waarop deze stap wacht |
+| `when` | string | Conditie-expressie — sla stap over als onwaar |
 | `model` | string | Claude-model: `sonnet`, `opus`, `haiku` |
 | `effort` | string | Claude-inspanningsniveau |
 | `isolation` | string | `worktree` — voer uit in geïsoleerde git worktree |
-| `max_budget_usd` | number | Maximale uitgavengrens per node |
+| `max_budget_usd` | number | Maximale uitgavengrens per stap |
 | `trigger_rule` | string | `all_done` (standaard), `all_success`, `one_success`, `one_failure` |
-| `chain_from` | string | Node-ID waarvan de Claude-sessie wordt hervat |
+| `chain_from` | string | Stap-ID waarvan de Claude-sessie wordt hervat |
 | `output_format` | object | JSON-schema voor gestructureerde output |
+
+### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> — prompttekst
+
+Vrije tekst. Claude leest dit letterlijk (na vervanging van templatevariabelen). Geen speciale key=value-syntaxis — alleen instructies. Kan meerdere alinea's bevatten, codeblokken, Mermaid-diagrammen of andere inhoud die Claude helpt de taak te begrijpen.
+
+---
 
 ## Templatevariabelen
 
@@ -73,7 +126,7 @@ Gebruik `{{var}}` in `∆`-promptteksten en `http`-nodeconfiguraties om webhook-
 
 ```
 ∆begroet∆
-Zeg hallo. Het issue-nummer is {{issue.number}} in {{repo.full_name}}.
+Zeg hallo. Issuenummer is {{issue.number}} in {{repo.full_name}}.
 ∆∆
 ```
 
@@ -82,18 +135,20 @@ Zeg hallo. Het issue-nummer is {{issue.number}} in {{repo.full_name}}.
 | Filter | Output |
 |--------|--------|
 | `{{var}}` | Ruwe waarde |
-| `{{var\|json}}` | JSON-gecodeerde waarde — gebruik in JSON-bodies zonder aanhalingstekens eromheen |
+| `{{var\|json}}` | JSON-gecodeerde waarde — gebruik in JSON-bodies zonder aanhalingstekens |
 | `{{var\|urlencode}}` | URL-gecodeerde waarde — gebruik in querystrings |
 
 `sky lint` markeert kale `{{var}}` binnen JSON-stringliterals als `SKY-WF-047`.
 
 ### Bash-nodes
 
-`{{var}}` is **niet beschikbaar** in `bash` of `loop.until.bash`. Webhook-variabelen bereiken bash via omgevingsvariabelen: `SKY_<HOOFDLETTER_SLEUTEL>` (punten → underscores). Eerdere node-outputs zijn beschikbaar als `$SKY_OUTPUT_<NODE_ID>`. Altijd quoten: `"$SKY_ISSUE_NUMBER"`.
+`{{var}}` is **niet beschikbaar** in `bash` of `loop.until.bash`. Webhook-variabelen bereiken bash via omgevingsvariabelen: `SKY_<HOOFDLETTER_SLEUTEL>` (punten → underscores). Eerdere stapoutputs zijn beschikbaar als `$SKY_OUTPUT_<STAP_ID>`. Altijd quoten: `"$SKY_ISSUE_NUMBER"`.
+
+---
 
 ## MCP-servers
 
-Stel MCP-servers beschikbaar aan alle prompt/command-nodes via `mcp_servers` in `⊕meta⊕`:
+Stel MCP-servers beschikbaar aan alle prompt/command-stappen via `mcp_servers` in `⊕meta⊕`:
 
 ```
 ⊕meta⊕
@@ -103,6 +158,8 @@ mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
 ```
 
 De map wordt samengevoegd met `~/.sky/claude-env/mcp.json`. Naambotsingen met beheerde servers breken de run af.
+
+---
 
 ## Validatie
 
