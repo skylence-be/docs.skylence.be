@@ -1,3 +1,19 @@
+@font-face {
+  font-family: 'N27';
+  src:
+    url('/fonts/n27/n27-regular-webfont.woff2') format('woff2'),
+    url('/fonts/n27/n27-regular-webfont.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Apply N27 to the Skylence nav logo text */
+.site-title {
+  font-family: 'N27', sans-serif;
+  letter-spacing: 0.03em;
+}
+
 :root {
   --sl-color-accent-low: #1a1225;
   --sl-color-accent: #a855f7;
