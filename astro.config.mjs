@@ -11,6 +11,13 @@ export default defineConfig({
             favicon: '/favicon.svg',
             plugins: [starlightLinksValidator(), starlightClientMermaid()],
             customCss: ['./src/styles/sky-colors.css'],
+            head: [
+                {
+                    tag: 'script',
+                    content: `if(!localStorage.getItem('starlight-theme-init')){localStorage.setItem('starlight-theme-init','1');localStorage.setItem('starlight-theme','dark');document.documentElement.dataset.theme='dark';}`,
+                },
+            ],
+            editLink: { baseUrl: 'https://github.com/skylence-be/skylence/edit/main/docs/' },
             title: 'Skylence',
             description: 'Claude Code Harness — documentation',
             logo: {
@@ -26,24 +33,16 @@ export default defineConfig({
             ],
             sidebar: [
                 {
-                    label: 'Introduction',
-                    translations: { nl: 'Introductie' },
-                    slug: 'index',
-                },
-                {
-                    label: 'Installation',
-                    translations: { nl: 'Installatie' },
-                    slug: 'installation',
+                    label: 'The .sky Codex',
+                    autogenerate: { directory: 'codex' },
                 },
                 {
                     label: 'Getting Started',
-                    translations: { nl: 'Aan de slag' },
-                    slug: 'getting-started',
-                },
-                {
-                    label: 'FAQ',
-                    translations: { nl: 'Veelgestelde vragen' },
-                    slug: 'faq',
+                    items: [
+                        { slug: 'installation' },
+                        { slug: 'getting-started' },
+                        { slug: 'faq' },
+                    ],
                 },
                 {
                     label: 'Examples',

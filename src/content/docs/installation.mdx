@@ -9,6 +9,8 @@ Skylence ships as a single static binary called `sky`. It runs as a local daemon
 
 ## Install
 
+### macOS / Linux
+
 One command. Auto-detects your OS and architecture, verifies the checksum, installs to `/usr/local/bin/sky`.
 
 ```sh
@@ -34,9 +36,30 @@ curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/inst
 
 The installer supports macOS and Linux on both amd64 and arm64.
 
-### Windows (WSL2)
+### Windows
 
-Native Windows is not supported. Install WSL2 and run the Linux binary from inside your WSL distro — the installer above works as-is from a WSL shell and places `sky` under `/usr/local/bin/sky`. WSL1 is not supported.
+```powershell
+irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1 | iex
+```
+
+Then:
+
+```powershell
+sky --version
+sky setup
+```
+
+#### Installer flags
+
+```powershell
+# Pin to a specific release
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Version v0.2.0
+
+# Install to a custom directory
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Dir C:\tools\sky
+```
+
+Requires Windows 11 (PowerShell 5.1+). Installs to `%USERPROFILE%\.sky\bin\sky.exe` and adds it to user PATH.
 
 ## Self-update
 
