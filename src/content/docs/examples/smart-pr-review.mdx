@@ -27,6 +27,14 @@ trigger.github.label = "sky-review"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "sky-review" label to a pull request.
+It reads the diff, decides which review checks actually apply, runs them in parallel,
+consolidates all findings by severity, and pushes fixes directly onto the PR branch.
+By the time it finishes, CRITICAL and MAJOR issues are already resolved — you just
+approve the PR and merge.
+※※
+
 §classify§
 model = "haiku"
 §§
@@ -56,6 +64,16 @@ Rules:
 Output ONLY valid JSON:
 {"run_code_review": "true|false", "run_error_handling": "true|false", "run_test_coverage": "true|false", "complexity": "trivial|small|medium|large", "reasoning": "<brief>"}
 ∆∆
+
+※※
+STEP 1 — CLASSIFY
+A fast Haiku model reads the full diff of the PR and decides:
+  - Should code review run? (almost always yes, unless it is docs-only)
+  - Should error-handling review run? (only if the diff touches error paths)
+  - Should test-coverage review run? (only if source files changed)
+  - How complex is this PR? (trivial / small / medium / large)
+The answers determine exactly which of the next three agents actually run.
+※※
 
 §code-review§
 model = "sonnet"
@@ -120,6 +138,15 @@ Check:
 List gaps: severity, what to add/fix.
 ∆∆
 
+※※
+STEPS 2a / 2b / 2c — PARALLEL REVIEWS
+The selected review agents run simultaneously, each examining a different angle:
+  Code review     — is the logic correct? edge cases? security issues? conventions?
+  Error handling  — are errors handled properly? cleanup on failure paths?
+  Test coverage   — are changed code paths tested? are edge cases covered?
+Only the agents that were selected in step 1 run. The others are skipped.
+※※
+
 §synthesize§
 model = "sonnet"
 depends_on = ["code-review", "error-handling", "test-coverage"]
@@ -140,6 +167,15 @@ Group by severity:
 
 If no issues: "LGTM — no fixes required."
 ∆∆
+
+※※
+STEP 3 — SYNTHESIZE
+All findings from whichever review agents ran are collected and grouped by severity:
+  CRITICAL — must fix before merging
+  MAJOR    — should fix before merging
+  MINOR    — non-blocking improvement
+If all agents returned clean, the synthesis says "LGTM — no fixes required."
+※※
 
 §fix§
 model = "opus"

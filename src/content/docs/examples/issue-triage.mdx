@@ -27,6 +27,17 @@ trigger.github.label = "sky-triage"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "sky-triage" label to a GitHub issue.
+It automatically reads the issue title and body, determines what kind of issue it is,
+how urgent it is, and which part of the system it affects — then applies the right labels
+and posts a short triage comment so the issue is ready for prioritization.
+
+This is ideal for repositories that receive many issues. The "sky-triage" label can itself
+be added automatically by a GitHub Actions workflow on every new issue creation, making
+triage fully hands-off.
+※※
+
 §classify§
 model = "haiku"
 §§
@@ -64,6 +75,16 @@ Priority:
 Output ONLY valid JSON:
 {"type": "<type>", "priority": "low|medium|high", "area": "<component>", "reasoning": "<one sentence>"}
 ∆∆
+
+※※
+STEP 1 — CLASSIFY
+A fast, cheap model (Haiku) reads the issue title and body and outputs three things:
+  type     — what kind of issue is this? (bug, feature, enhancement, question, docs, wontfix)
+  priority — how urgent? (high: blocking users, medium: friction with workaround, low: nice-to-have)
+  area     — which component or subsystem does this relate to?
+This takes only a fraction of a second and costs almost nothing. The result is a small
+JSON object that the next step reads to apply labels.
+※※
 
 §label§
 model = "sonnet"

@@ -28,9 +28,26 @@ trigger.github.label = "doc-garden"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "doc-garden" label to any issue — it is a manual trigger
+used for periodic maintenance, not tied to a specific event. Run it monthly or after a large
+refactor to catch documentation that has drifted out of sync with the codebase.
+
+The output is a GitHub tracking issue with a checklist of stale docs.
+If everything is up to date, no issue is opened and the workflow ends silently.
+※※
+
 §scan§
 bash = "git ls-files 'docs/*.md' 'docs/**/*.md' | xargs -n1 -I F git log -1 --format='%cs F' -- F | sort; echo '---ACTIVE-PLANS---'; git ls-files 'docs/exec-plans/active/*' 2>/dev/null || true; echo '---TODAY---'; date -u +%Y-%m-%d"
 §§
+
+※※
+STEP 1 — SCAN
+A bash command lists every markdown file under docs/ along with the date it was last changed
+in git. It also lists any active execution plans and today's date.
+This produces a simple inventory of doc ages — the raw material for the next step.
+No AI model runs here; it is just a git command.
+※※
 
 §inventory§
 model = "opus"
@@ -86,6 +103,18 @@ If zero findings:
 
 clean — no stale docs detected.
 ∆∆
+
+※※
+STEP 2 — INVENTORY
+Opus reads every doc that has not been updated in more than 90 days. For each one it
+cross-checks the content against the current codebase, looking for four problems:
+  broken-reference  — the doc cites a function, file, or flag that no longer exists
+  outdated-grade    — a quality score or assessment no longer matches the code
+  finished-plan     — an execution plan in active/ has no remaining open tasks
+  stale-narrative   — the doc describes behavior that contradicts how the code works now
+Accurate, stable reference material (like API docs or config references) is skipped.
+The result is a structured findings table.
+※※
 
 §report§
 model = "sonnet"

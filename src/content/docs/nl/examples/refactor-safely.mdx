@@ -31,6 +31,16 @@ trigger.github.label = "sky-refactor"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "sky-refactor" label to a GitHub issue.
+It is designed for structural reorganization where you need a guarantee that behavior
+is not changed — moving files, extracting packages, splitting large modules.
+
+The workflow enforces a strict separation: analysis and planning happen in read-only mode
+before any code is touched. A dedicated verification step at the end checks that no
+logic changes slipped in. Write the target files and goal in the issue body.
+※※
+
 §analyze§
 model = "opus"
 effort = "max"
@@ -66,6 +76,15 @@ Read-only analysis — NO changes yet.
 Produce structured report: target files, dependency map, risk assessment, test coverage, recommended approach.
 ∆∆
 
+※※
+STEP 1 — ANALYZE (read-only, no changes)
+Opus reads every target file thoroughly, maps every call site that imports or uses those
+symbols, identifies risks (shared state, exported APIs, module-level side effects), and
+finds the existing tests that cover this code.
+It produces a structured report: dependency map, risk assessment, test coverage gaps,
+and a recommended reorganization strategy. Nothing is changed at this stage.
+※※
+
 §plan§
 model = "opus"
 effort = "max"
@@ -84,8 +103,16 @@ Principles:
 - Public API preserved: exported symbols stay at same import paths.
 - No mixing with bug fixes or new features.
 
-Produce ordered task list. Each task: specific, independent, verifiable.
+Produce ordered task list. Each task: specific (what to move where), independent (compiles alone), verifiable (states what test output confirms done).
 ∆∆
+
+※※
+STEP 2 — PLAN
+Using the analysis report, Opus creates an ordered task list for the refactor.
+Each task is specific (what moves where), independent (compiles on its own), and
+verifiable (states what test output confirms it is done). The plan enforces one rule:
+structural moves only, no logic changes. No mixing with bug fixes or new features.
+※※
 
 §execute§
 model = "opus"
@@ -109,10 +136,24 @@ Rules:
 - Push on completion: `git push -u origin HEAD`.
 ∆∆
 
+※※
+STEP 3 — EXECUTE
+Opus follows the plan step by step inside an isolated worktree (a fresh branch).
+After each task it runs "make test && go vet ./..." and fixes failures before moving on.
+Moving code only — no logic improvements, no bug fixes, no cleanups beyond the scope.
+Commits after each task, pushes on completion.
+※※
+
 §test§
 bash = "make test && go vet ./..."
 depends_on = ["execute"]
 §§
+
+※※
+STEP 4 — TEST GATE
+An independent bash step runs "make test && go vet ./..." after execute finishes.
+If anything is broken, this gate catches it before verification.
+※※
 
 §verify§
 model = "sonnet"
@@ -134,6 +175,14 @@ Verify:
 Report: BEHAVIOR PRESERVED or list logic changes found.
 ∆∆
 
+※※
+STEP 5 — VERIFY BEHAVIOR PRESERVED
+A dedicated Sonnet pass reads the complete diff and checks for logic changes.
+It confirms: moved functions are byte-for-byte identical to originals, re-exports exist
+for all previously exported symbols, import sites are updated, no state or side effects
+were added or removed. Reports "BEHAVIOR PRESERVED" or lists exactly what changed.
+※※
+
 §create-pr§
 model = "sonnet"
 depends_on = ["test", "verify"]
@@ -148,7 +197,8 @@ Verification: $verify.output
 
 1. Confirm committed: `git status`
 2. Push if needed: `git push -u origin HEAD`
-3. Create draft: `gh pr create --draft`
+3. Check existing: `gh pr list --head $(git branch --show-current)`
+4. Create draft: `gh pr create --draft`
    - Title: `refactor: <description>` under 70 chars
    - Body: what restructured, why, behavior preserved, `Closes #{{issue.number}}`
 ∆∆

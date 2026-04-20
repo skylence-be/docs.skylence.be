@@ -26,6 +26,16 @@ trigger.github.label = "sky-resolve"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "sky-resolve" label to a pull request.
+It handles the entire rebase automatically: fetching the latest base branch, checking out
+the PR branch, running git rebase, and for each merge conflict reading both sides to
+understand the intent of each change and producing a resolution that preserves both.
+
+After all conflicts are resolved it runs your test suite to confirm nothing broke,
+then force-pushes the rebased branch back to GitHub. The PR is back in a mergeable state.
+※※
+
 §resolve§
 model = "sonnet"
 §§

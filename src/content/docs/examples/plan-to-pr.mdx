@@ -30,6 +30,15 @@ trigger.github.label = "sky-implement"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "sky-implement" label to a GitHub issue.
+Unlike fix-github-issue which figures out the plan itself, this workflow treats the
+issue body as the plan. Write exactly what you want done — which files, which functions,
+what behavior — then label the issue. Skylence executes it step by step and opens a PR.
+
+Be specific in the issue body. The more detail you provide, the more predictable the result.
+※※
+
 §implement§
 model = "opus"
 effort = "max"
@@ -60,10 +69,24 @@ Per task:
 Push on completion: `git push -u origin HEAD`.
 ∆∆
 
+※※
+STEP 1 — IMPLEMENT
+Opus reads your issue body as a task list and executes it inside an isolated copy of the
+codebase (a git worktree on a fresh branch). For each task it makes the change, runs
+"make test", fixes any failures before moving on, then commits with a reference to the
+issue. When all tasks are done it pushes the branch to GitHub.
+※※
+
 §test§
 bash = "make test"
 depends_on = ["implement"]
 §§
+
+※※
+STEP 2 — TEST GATE
+An independent bash step runs "make test" as a hard gate before review begins.
+If tests are failing here, the workflow knows before spending time on code review.
+※※
 
 §review-classify§
 model = "haiku"
@@ -84,6 +107,14 @@ Rules:
 Output ONLY valid JSON:
 {"run_error_handling": "true|false", "run_test_coverage": "true|false", "run_docs_impact": "true|false", "reasoning": "<brief>"}
 ∆∆
+
+※※
+STEP 3 — ROUTE REVIEWS
+A fast Haiku model reads the git diff and decides which review checks to run.
+Error-handling review only fires if the diff touches error paths.
+Test-coverage review only fires if source files changed.
+This avoids running unnecessary checks on documentation or config-only changes.
+※※
 
 §code-review§
 model = "sonnet"
@@ -106,6 +137,13 @@ List findings: severity (critical/major/minor), file:line, what to fix.
 Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
 ∆∆
 
+※※
+STEP 4 — CODE REVIEW
+Sonnet reviews the full diff against your plan: does the implementation match what was asked?
+Are there correctness issues, edge cases, or security concerns? Does it follow code conventions?
+Findings are listed by severity with file and line references.
+※※
+
 §synthesize§
 model = "sonnet"
 depends_on = ["code-review"]
@@ -123,6 +161,12 @@ Group by severity:
 
 If no issues: "LGTM — no fixes required."
 ∆∆
+
+※※
+STEP 5 — SYNTHESIZE
+All review findings are collected and grouped into CRITICAL / MAJOR / MINOR.
+This is the action list that the self-fix step works from.
+※※
 
 §self-fix§
 model = "opus"
@@ -142,6 +186,12 @@ Continue from implementation branch. Run `git fetch origin && git checkout <bran
 - Run `make test`. Commit and push.
 - If "LGTM — no fixes required", confirm and stop.
 ∆∆
+
+※※
+STEP 6 — SELF-FIX
+Opus fixes every CRITICAL and MAJOR finding from the review, runs tests again,
+commits the fixes, and pushes. If review said "no issues", this step confirms and skips.
+※※
 
 §create-pr§
 model = "sonnet"

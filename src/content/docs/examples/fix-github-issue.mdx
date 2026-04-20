@@ -31,6 +31,15 @@ trigger.github.label = "ready-for-sky"
 output_style = "terse"
 ⊕⊕
 
+※※
+This workflow fires when you add the "ready-for-sky" label to a GitHub issue.
+From that single action it handles the full engineering cycle automatically: reading the
+issue, understanding what kind of problem it is, writing the code to fix or build it,
+running tests, reviewing its own work, fixing review findings, and opening a pull request.
+
+You do not need to write any code. Label the issue and walk away.
+※※
+
 §classify§
 model = "haiku"
 §§
@@ -66,6 +75,15 @@ Output ONLY valid JSON:
 {"issue_type": "<type>", "reasoning": "<one sentence>"}
 ∆∆
 
+※※
+STEP 1 — CLASSIFY
+A fast, cheap model (Haiku) reads the issue title and body and decides what kind of
+problem this is: a bug, a feature request, an enhancement, or something else.
+This takes only a few seconds. The result routes the rest of the workflow:
+  - Bug → goes to INVESTIGATE (root cause analysis)
+  - Feature or enhancement → goes to PLAN (implementation blueprint)
+※※
+
 §investigate§
 model = "opus"
 effort = "max"
@@ -88,6 +106,15 @@ Investigate bug:
 
 Produce structured investigation report. No implementation yet.
 ∆∆
+
+※※
+STEP 2a — INVESTIGATE (bugs only, skipped for features)
+The most capable model (Opus, maximum effort) reads through the codebase and traces the
+exact path that leads to the bug: which file, which function, which line is responsible.
+No code is changed at this stage. The result is a structured report describing the root
+cause, the minimal safe fix, and which tests need to be added or updated.
+This report is passed directly to the IMPLEMENT step.
+※※
 
 §plan§
 model = "opus"
@@ -112,6 +139,14 @@ Create implementation plan:
 Produce structured plan. No implementation yet.
 ∆∆
 
+※※
+STEP 2b — PLAN (features and enhancements only, skipped for bugs)
+Same powerful model, different job: instead of finding what broke, it designs what to build.
+It lists every file that needs changing and explains why, defines the test strategy, calls out
+any breaking changes, and orders all the tasks to minimize risk.
+This plan is passed directly to the IMPLEMENT step.
+※※
+
 §implement§
 model = "opus"
 effort = "max"
@@ -132,10 +167,26 @@ Execute:
 - Push: `git push -u origin HEAD`.
 ∆∆
 
+※※
+STEP 3 — IMPLEMENT
+Opus executes the investigation report or feature plan inside a completely isolated copy of
+the codebase (a git worktree — a fresh branch that cannot affect your main branch).
+It makes changes file by file, runs "make test" after each group of changes, fixes any
+failures before continuing, commits everything referencing the issue number, and pushes
+the branch to GitHub when done.
+※※
+
 §test§
 bash = "make test"
 depends_on = ["implement"]
 §§
+
+※※
+STEP 4 — TEST GATE
+An independent bash step runs "make test" after the implement step completes.
+This acts as a hard gate before the review phase: if tests are still failing at this
+point, the workflow catches it before spending time on multi-agent code review.
+※※
 
 §review-classify§
 model = "haiku"
@@ -156,6 +207,15 @@ Rules:
 Output ONLY valid JSON:
 {"run_error_handling": "true|false", "run_test_coverage": "true|false", "run_docs_impact": "true|false", "reasoning": "<brief>"}
 ∆∆
+
+※※
+STEP 5 — ROUTE REVIEWS
+A fast Haiku model reads the actual git diff — the real lines of code that changed — and
+decides which of the three specialized review agents need to run.
+If nothing touched error handling, the error-handling reviewer is skipped entirely.
+If there are no source file changes, test-coverage review is skipped.
+This keeps review fast and targeted rather than running every check on every change.
+※※
 
 §code-review§
 model = "sonnet"
@@ -218,6 +278,15 @@ Check:
 List gaps: severity, what to add/fix.
 ∆∆
 
+※※
+STEPS 6a / 6b / 6c — PARALLEL REVIEWS
+Up to three Sonnet agents run simultaneously, each focused on a different dimension:
+  Code review     — correctness, edge cases, security, naming conventions
+  Error handling  — are all errors caught? are messages useful? is cleanup correct?
+  Test coverage   — are new code paths tested? are edge cases and boundaries covered?
+Only the agents selected by the routing step actually run. All findings flow into SYNTHESIZE.
+※※
+
 §synthesize§
 model = "sonnet"
 depends_on = ["code-review", "error-handling", "test-coverage"]
@@ -239,6 +308,15 @@ Group by severity:
 If no issues: "LGTM — no fixes required."
 ∆∆
 
+※※
+STEP 7 — SYNTHESIZE
+One Sonnet call collects every finding from whichever review agents ran and organizes
+them by severity into a single consolidated report:
+  CRITICAL — must fix before this PR can be merged
+  MAJOR    — should fix before merging
+  MINOR    — non-blocking, good to address but not required
+※※
+
 §self-fix§
 model = "opus"
 effort = "max"
@@ -257,6 +335,14 @@ Continue from implementation branch. Run `git fetch origin && git checkout <bran
 - Run `make test`. Commit and push.
 - If "LGTM — no fixes required", confirm and stop.
 ∆∆
+
+※※
+STEP 8 — SELF-FIX
+Opus goes back to the implementation branch and fixes every CRITICAL and MAJOR finding
+from the review. It also fixes MINOR findings if they are trivial to address.
+After fixing it runs the test suite again, commits the fixes, and pushes.
+If the review concluded "no issues found", this step confirms and stops without changes.
+※※
 
 §create-pr§
 model = "sonnet"
