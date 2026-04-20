@@ -1,6 +1,6 @@
 ---
 title: Skylence
-description: Claude Code Harness — build and run Claude workflows from code.
+description: Claude Code Harness Builder — build and run Claude workflows from code.
 template: splash
 hero:
   tagline: Automate Claude Code with structured workflows.
@@ -15,9 +15,68 @@ hero:
 
 ## What is Skylence?
 
-Skylence is a Claude Code harness. It listens for GitHub webhook events, matches them to workflow definitions, and runs each step by calling the `claude` CLI — streaming results over WebSocket to connected clients in real time.
+Skylence is a Claude Code **harness builder**. You give it `.sky` workflow files; it builds and runs a harness for each matching GitHub event — calling the `claude` CLI, streaming results over WebSocket, and persisting everything locally.
 
-You write workflows as `.sky` files in your repository. Skylence handles the rest: trigger matching, DAG execution, budget enforcement, and live observability.
+```mermaid
+flowchart TB
+  subgraph T["① Something happens on GitHub"]
+    direction LR
+    GH["📨 New issue or<br/>pull request"]
+  end
+
+  subgraph W["② Skylence does the work"]
+    direction LR
+    Plan["✅ Follows your recipe<br/>step by step"]
+    AI["🤖 Asks Claude<br/>(the AI) to think"]
+    Save["💾 Writes down<br/>every result"]
+    Live["📡 Streams live<br/>updates"]
+    Plan --> AI
+    Plan --> Save
+    Plan --> Live
+  end
+
+  subgraph Y["③ You see what happened"]
+    direction LR
+    Dash["📺 Live progress<br/>in your browser"]
+    File["📁 All results<br/>on your computer"]
+  end
+
+  subgraph R["You tell Claude the workflow it needs to put together, it writes it for you"]
+    direction LR
+    Ask["🗣️ You tell Claude<br/>what you want"]
+    Recipe["📖 .sky file<br/>AI-language,<br/>humans can read it<br/>between lines"]
+    Ask --> Recipe
+  end
+
+  T --> W
+  Live -. live .-> Dash
+  Save -. saved .-> File
+
+  classDef trigger fill:#60a5fa22,stroke:#60a5fa,stroke-width:2px
+  classDef recipe  fill:#a78bfa22,stroke:#a78bfa,stroke-width:2px
+  classDef work    fill:#f8717122,stroke:#f87171,stroke-width:2px
+  classDef you     fill:#fb923c22,stroke:#fb923c,stroke-width:2px
+
+  class GH trigger
+  class Ask,Recipe recipe
+  class Plan,AI,Save,Live work
+  class Dash,File you
+
+  style T fill:#60a5fa0d,stroke:#60a5fa66,stroke-width:1px
+  style R fill:#a78bfa0d,stroke:#a78bfa66,stroke-width:1px
+  style W fill:#f871710d,stroke:#f8717166,stroke-width:1px
+  style Y fill:#fb923c0d,stroke:#fb923c66,stroke-width:1px
+```
+
+## Why this exists
+
+I saw a YouTuber demo [Archon](https://archon.diy), a Claude Code harness builder. I tried it myself with a couple of carefully designed workflows. Wiring authentication into a simple Laravel todos app took 45 to 50 minutes end to end. Too slow.
+
+Later I ran across [Weft](https://weavemind.ai) from WeaveMindAI, a DAG language for AI workflows. And I noticed GitNexus had a web UI: running `gitnexus serve` hooks the CLI up to it.
+
+Those three clicked. I wanted one file format that was AI-first, so Claude could author it with tight, performant prompts, but still readable enough for a human to review before it ships. Claude does not run the file itself. Skylence reads it, resolves the DAG, and shells out to the `claude` CLI for the thinking parts.
+
+So I built `.sky`.
 
 ## How it works
 
