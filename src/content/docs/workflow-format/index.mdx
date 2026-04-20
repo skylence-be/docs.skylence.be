@@ -15,11 +15,11 @@ Workflows live in `.sky/workflows/*.sky` in your repository.
 
 ## How a .sky file is built
 
-A `.sky` file is split into sections by three **Unicode delimiter characters** — chosen because they never appear in normal code or prose, so no escaping is needed.
+A `.sky` file is split into sections by four **Unicode delimiter characters** — chosen because they never appear in normal code or prose, so no escaping is needed.
 
 Each delimiter wraps a named block. The name (the **id**) is what ties everything together: `§plan§` declares a step, and `∆plan∆` provides the instructions Claude will read for that exact step.
 
-There are exactly three kinds of block:
+There are four kinds of block:
 
 <div class="sky-box sky-box-meta">
   <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="required · exactly one" variant="note" />
@@ -34,6 +34,11 @@ There are exactly three kinds of block:
 <div class="sky-box sky-box-prompt">
   <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optional · paired by id" variant="tip" />
   <p>Prompt body. This is what Claude actually reads. Paired to its step by the same id. Template variables like <code>{"{{issue.number}}"}</code> are substituted before Claude sees the text. No step config here — only instructions.</p>
+</div>
+
+<div class="sky-box" style="border-color: #94a3b8; background: #94a3b810;">
+  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> — <Badge text="optional · discarded" variant="default" />
+  <p>Doc block. Parser discards all content between the two <code>※※</code> markers. Use anywhere between sections to explain what the workflow or a step does — zero effect on execution, zero tokens sent to Claude.</p>
 </div>
 
 <Aside type="note" title="Execution order comes from depends_on">
@@ -52,6 +57,11 @@ Every opener and closer must appear **alone on its own line**.
   <span class="sky-meta">trigger.github.events = ["issues.labeled"]</span><br/>
   <span class="sky-meta">trigger.github.label = "ready-for-sky"</span><br/>
   <span class="sky-sym">⊕⊕</span>
+  <br/><br/>
+  <span class="sky-sym">※※</span><br/>
+  <span class="sky-doc">Reads a labeled issue, writes a plan, implements in an isolated worktree,</span><br/>
+  <span class="sky-doc">runs tests, then opens a draft PR. Fully autonomous end to end.</span><br/>
+  <span class="sky-sym">※※</span>
   <br/><br/>
   <span class="sky-sym">§</span><span class="sky-id">plan</span><span class="sky-sym">§</span><br/>
   <span class="sky-step">command = "plan"</span><br/>
@@ -74,7 +84,8 @@ Every opener and closer must appear **alone on its own line**.
 <span class="sky-id">■</span> Purple = step id &nbsp;
 <span class="sky-meta">■</span> Magenta = meta body &nbsp;
 <span class="sky-step">■</span> Red = step config &nbsp;
-<span class="sky-prompt">■</span> Orange = prompt body
+<span class="sky-prompt">■</span> Orange = prompt body &nbsp;
+<span class="sky-doc">■</span> Slate = doc block (discarded)
 
 ---
 

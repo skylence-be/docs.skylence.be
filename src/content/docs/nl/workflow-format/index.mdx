@@ -15,11 +15,11 @@ Workflows staan in `.sky/workflows/*.sky` in je repository.
 
 ## Hoe een .sky-bestand is opgebouwd
 
-Een `.sky`-bestand wordt opgedeeld in secties door drie **Unicode-scheidingstekens** — gekozen omdat ze nooit voorkomen in normale code of tekst, zodat escaping niet nodig is.
+Een `.sky`-bestand wordt opgedeeld in secties door vier **Unicode-scheidingstekens** — gekozen omdat ze nooit voorkomen in normale code of tekst, zodat escaping niet nodig is.
 
 Elk scheidingsteken omsluit een benoemd blok. De naam (het **id**) is wat alles aan elkaar koppelt: `§plan§` declareert een stap, en `∆plan∆` geeft de instructies die Claude voor precies die stap leest.
 
-Er zijn precies drie soorten blok:
+Er zijn vier soorten blok:
 
 <div class="sky-box sky-box-meta">
   <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="verplicht · precies één" variant="note" />
@@ -34,6 +34,11 @@ Er zijn precies drie soorten blok:
 <div class="sky-box sky-box-prompt">
   <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optioneel · gekoppeld via id" variant="tip" />
   <p>Prompttekst. Dit is wat Claude daadwerkelijk leest. Gekoppeld aan zijn stap via hetzelfde id. Templatevariabelen zoals <code>{"{{issue.number}}"}</code> worden vervangen voordat Claude de tekst ziet. Geen stapconfig hier — alleen instructies.</p>
+</div>
+
+<div class="sky-box" style="border-color: #94a3b8; background: #94a3b810;">
+  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> — <Badge text="optioneel · genegeerd" variant="default" />
+  <p>Docblok. Parser negeert alle inhoud tussen de twee <code>※※</code>-markeringen. Gebruik overal tussen secties om uit te leggen wat de workflow of stap doet — geen effect op uitvoering, geen tokens naar Claude.</p>
 </div>
 
 <Aside type="note" title="Uitvoeringsvolgorde komt van depends_on">
@@ -52,6 +57,11 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
   <span class="sky-meta">trigger.github.events = ["issues.labeled"]</span><br/>
   <span class="sky-meta">trigger.github.label = "ready-for-sky"</span><br/>
   <span class="sky-sym">⊕⊕</span>
+  <br/><br/>
+  <span class="sky-sym">※※</span><br/>
+  <span class="sky-doc">Leest gelabeld issue, schrijft plan, implementeert in geïsoleerde worktree,</span><br/>
+  <span class="sky-doc">voert tests uit, opent concept-PR. Volledig autonoom van begin tot eind.</span><br/>
+  <span class="sky-sym">※※</span>
   <br/><br/>
   <span class="sky-sym">§</span><span class="sky-id">plan</span><span class="sky-sym">§</span><br/>
   <span class="sky-step">command = "plan"</span><br/>
@@ -74,7 +84,8 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
 <span class="sky-id">■</span> Paars = stap-id &nbsp;
 <span class="sky-meta">■</span> Magenta = meta-inhoud &nbsp;
 <span class="sky-step">■</span> Rood = stapconfig &nbsp;
-<span class="sky-prompt">■</span> Oranje = prompttekst
+<span class="sky-prompt">■</span> Oranje = prompttekst &nbsp;
+<span class="sky-doc">■</span> Grijs = docblok (genegeerd)
 
 ---
 

@@ -5,6 +5,8 @@
 .sky-prompt{ color: #fb923c; }                       /* ∆node∆ body               → orange */
 .sky-id    { color: #a78bfa; font-style: italic; }   /* id inside delimiters       → purple */
 
+.sky-doc  { color: #94a3b8; font-style: italic; }            /* ※※ doc body              → slate/muted */
+
 .sky-file {
     font-family: var(--sl-font-mono, monospace);
     font-size: 0.875rem;
