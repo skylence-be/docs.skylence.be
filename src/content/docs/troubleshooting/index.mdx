@@ -7,9 +7,9 @@ description: Common problems and how to fix them.
 
 Skylence runs `claude` as a subprocess. If `sky serve` or `sky run` reports this error, the Claude Code CLI is not in your PATH.
 
-**Fix:** Run `sky setup` — it checks whether `claude` and `gh` are reachable. If they are not, install Claude Code and confirm `claude --version` works in a fresh terminal before starting the daemon.
+**Fix:** Run `sky setup` - it checks whether `claude` and `gh` are reachable. If they are not, install Claude Code and confirm `claude --version` works in a fresh terminal before starting the daemon.
 
-See [Error Codes](/error-codes/) — `SKY-CL-001`.
+See [Error Codes](/error-codes/) - `SKY-CL-001`.
 
 ---
 
@@ -17,10 +17,10 @@ See [Error Codes](/error-codes/) — `SKY-CL-001`.
 
 Check these four things in order:
 
-1. **Label match** — the `trigger.github.label` in your `.sky` file must exactly match the label you added. Labels are case-sensitive.
-2. **HMAC secret** — if the webhook secret in `~/.sky/.env` doesn't match the one configured on GitHub, every incoming webhook is rejected with `SKY-WH-001`. Regenerate with `sky webhook register`.
-3. **Workflow valid** — run `sky lint`. An invalid workflow is skipped silently at load time. Lint errors are reported on startup but easy to miss.
-4. **Daemon running** — `sky serve` must be running and reachable at the URL registered on GitHub.
+1. **Label match** - the `trigger.github.label` in your `.sky` file must exactly match the label you added. Labels are case-sensitive.
+2. **HMAC secret** - if the webhook secret in `~/.sky/.env` doesn't match the one configured on GitHub, every incoming webhook is rejected with `SKY-WH-001`. Regenerate with `sky webhook register`.
+3. **Workflow valid** - run `sky lint`. An invalid workflow is skipped silently at load time. Lint errors are reported on startup but easy to miss.
+4. **Daemon running** - `sky serve` must be running and reachable at the URL registered on GitHub.
 
 ---
 
@@ -39,7 +39,7 @@ Run `sky logs <run-id>` to see the full event log for that run.
 
 ## A step is running for a long time
 
-This is usually expected. Opus with `effort = "max"` on a large codebase can take several minutes. Check `sky logs <run-id>` — events stream in while the run is still in progress, so you can see what it is doing.
+This is usually expected. Opus with `effort = "max"` on a large codebase can take several minutes. Check `sky logs <run-id>` - events stream in while the run is still in progress, so you can see what it is doing.
 
 If no events appear at all after the first few seconds, the `claude` subprocess may have hung. Stop the daemon, restart with `sky serve`, and resume the run:
 
@@ -87,13 +87,13 @@ Workflows with `isolation = "worktree"` create a temporary git worktree alongsid
 sky doctor
 ```
 
-If another `sky serve` process is already running, stop it first — SQLite allows only one writer. If the database is corrupted, move the old file aside and run `sky setup` to create a fresh one (this loses run history).
+If another `sky serve` process is already running, stop it first - SQLite allows only one writer. If the database is corrupted, move the old file aside and run `sky setup` to create a fresh one (this loses run history).
 
 ---
 
 ## WebSocket disconnects in the dashboard
 
-The dashboard at sandbox.skylence.be reconnects automatically. Disconnects during long runs are normal if your browser goes idle or the network is interrupted. The run continues on the server — reconnect and the event log replays from the beginning.
+The dashboard at sandbox.skylence.be reconnects automatically. Disconnects during long runs are normal if your browser goes idle or the network is interrupted. The run continues on the server - reconnect and the event log replays from the beginning.
 
 ---
 
@@ -113,7 +113,7 @@ If `tls_cert_file` and `tls_key_file` are configured, both must point to valid P
 
 ## Still stuck?
 
-- `sky doctor` — prints current config, isolation mode, and managed Claude environment path.
-- `sky logs` — lists the 20 most recent runs with status.
-- `sky logs <run-id>` — full event log for a single run.
-- [Error Codes](/error-codes/) — every error code with a description and resolution.
+- `sky doctor` - prints current config, isolation mode, and managed Claude environment path.
+- `sky logs` - lists the 20 most recent runs with status.
+- `sky logs <run-id>` - full event log for a single run.
+- [Error Codes](/error-codes/) - every error code with a description and resolution.

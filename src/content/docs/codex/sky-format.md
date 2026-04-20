@@ -1,15 +1,15 @@
 ---
 title: The .sky File Format
-description: Anatomy of a .sky file — the three section types, delimiters, and a complete working example.
+description: Anatomy of a .sky file - the three section types, delimiters, and a complete working example.
 sidebar:
   order: 4
 ---
 
-A `.sky` file has exactly three section types, each delimited by a pair of Unicode markers. The markers were chosen to be visually distinctive and unambiguous — no collisions with code, no ambiguity about where a section starts or ends.
+A `.sky` file has exactly three section types, each delimited by a pair of Unicode markers. The markers were chosen to be visually distinctive and unambiguous - no collisions with code, no ambiguity about where a section starts or ends.
 
 ## Section Types
 
-### `⊕meta⊕` — Workflow Metadata
+### `⊕meta⊕` - Workflow Metadata
 
 The meta section appears once, at the top. It contains the workflow's identity and trigger conditions in a YAML-like format:
 
@@ -31,13 +31,13 @@ trigger:
 Required fields: `id`, `name`, `trigger`. The `id` must be unique across all loaded workflows. It's what you pass to `sky run`.
 
 The `trigger` block supports:
-- `manual: true` — only runs via `sky run`, never from webhooks
-- `event:` — the GitHub event type (`pull_request`, `push`, `issues`)
-- `action:` — the event action (`opened`, `synchronize`, `closed`, `created`)
-- `repos:` — list of `owner/repo` patterns to match
-- `branches:` — list of branch names or glob patterns
+- `manual: true` - only runs via `sky run`, never from webhooks
+- `event:` - the GitHub event type (`pull_request`, `push`, `issues`)
+- `action:` - the event action (`opened`, `synchronize`, `closed`, `created`)
+- `repos:` - list of `owner/repo` patterns to match
+- `branches:` - list of branch names or glob patterns
 
-### `§step§` — Node Definitions
+### `§step§` - Node Definitions
 
 Each node in the workflow gets a `§step§` section. This is where you declare the node's identity, dependencies, and execution parameters:
 
@@ -59,9 +59,9 @@ budget_tokens: 50000
 
 Required fields: `id`, `name`. Optional: `needs`, `model`, `budget_tokens`.
 
-The `needs:` field takes a list of node IDs. Skylence enforces that all listed IDs exist in the same workflow — `sky lint` will catch undefined references before any execution happens.
+The `needs:` field takes a list of node IDs. Skylence enforces that all listed IDs exist in the same workflow - `sky lint` will catch undefined references before any execution happens.
 
-### `∆prompt∆` — Claude Prompt Content
+### `∆prompt∆` - Claude Prompt Content
 
 Each node gets a `∆prompt∆` section containing the prompt Claude will receive for that node. The section is tagged with the node ID it belongs to:
 
@@ -76,11 +76,11 @@ Output as a structured list. Be specific. If there are no issues, say "No issues
 ∆prompt∆
 ```
 
-The content between the markers is passed verbatim to `claude`. Dependency outputs are prepended as context automatically — you don't need to reference them in the prompt. (Chapter 5 covers how dependency injection works.)
+The content between the markers is passed verbatim to `claude`. Dependency outputs are prepended as context automatically - you don't need to reference them in the prompt. (Chapter 5 covers how dependency injection works.)
 
 ## Doc Blocks
 
-`※※` blocks appear between sections. They're for human readers only — completely ignored during parsing and execution.
+`※※` blocks appear between sections. They're for human readers only - completely ignored during parsing and execution.
 
 ```
 ※※
@@ -153,4 +153,4 @@ Then test manually:
 sky run pr-lint-fix
 ```
 
-The format reference at [/workflow-format/](/workflow-format/) covers every field in full detail. This chapter covers the structure — that one covers the schema.
+The format reference at [/workflow-format/](/workflow-format/) covers every field in full detail. This chapter covers the structure - that one covers the schema.

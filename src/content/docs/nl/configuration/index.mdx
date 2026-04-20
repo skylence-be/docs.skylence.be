@@ -50,7 +50,7 @@ update_check_on_start: true
 | `metrics_bind_addr` | `SKY_METRICS_BIND_ADDR` | |
 | `shutdown_timeout` | `SKY_SHUTDOWN_TIMEOUT` | `30` |
 | `update_check_on_start` | `SKY_UPDATE_CHECK_ON_START` | `false` |
-| `monthly_budget_usd` | — | |
+| `monthly_budget_usd` | - | |
 
 ## TLS
 
@@ -68,7 +68,7 @@ bridge_tls_key_file: "/etc/sky/tls/key.pem"
 
 ## Snelheidsbeperking
 
-Per-IP-limiter, afzonderlijk toegepast op API-, webhook- en WebSocket-eindpunten. Er wordt een token bucket gebruikt — korte pieken zijn toegestaan, maar aanhoudend hoog verkeer wordt afgevlakt. Stel RPS in op `0` of minder om een limiter uit te schakelen. Burst moet `>= 1` zijn wanneer RPS positief is.
+Per-IP-limiter, afzonderlijk toegepast op API-, webhook- en WebSocket-eindpunten. Er wordt een token bucket gebruikt - korte pieken zijn toegestaan, maar aanhoudend hoog verkeer wordt afgevlakt. Stel RPS in op `0` of minder om een limiter uit te schakelen. Burst moet `>= 1` zijn wanneer RPS positief is.
 
 ## Metrics
 

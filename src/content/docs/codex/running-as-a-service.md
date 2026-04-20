@@ -5,7 +5,7 @@ sidebar:
   order: 7
 ---
 
-Running `sky serve` in a terminal tab works fine for development. For production you want the daemon to start at login, restart on crash, and stay out of your way. Each platform has a native mechanism for this — Skylence ships install scripts for all three.
+Running `sky serve` in a terminal tab works fine for development. For production you want the daemon to start at login, restart on crash, and stay out of your way. Each platform has a native mechanism for this - Skylence ships install scripts for all three.
 
 ## Before You Install
 
@@ -26,7 +26,7 @@ sky serve
 # Ctrl+C to stop
 ```
 
-## macOS — launchd LaunchAgent
+## macOS - launchd LaunchAgent
 
 ```bash
 curl -fsSL https://get.skylence.be/install-service.sh | bash
@@ -47,7 +47,7 @@ launchctl unload ~/Library/LaunchAgents/be.skylence.daemon.plist
 rm ~/Library/LaunchAgents/be.skylence.daemon.plist
 ```
 
-## Linux — systemd User Service
+## Linux - systemd User Service
 
 ```bash
 curl -fsSL https://get.skylence.be/install-service.sh | bash
@@ -63,7 +63,7 @@ journalctl --user -u skylence -f   # live logs
 
 User services require `loginctl enable-linger $(whoami)` if you want the service to survive after you log out (e.g., on a headless server). The install script checks for this and prompts if needed.
 
-## Windows — Scheduled Task
+## Windows - Scheduled Task
 
 ```powershell
 irm https://get.skylence.be/install-service.ps1 | iex

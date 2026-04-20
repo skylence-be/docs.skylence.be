@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-The execution model is a directed acyclic graph — DAG. Nodes are vertices. Dependency declarations (`needs:`) are directed edges. Skylence computes the topological sort and executes accordingly. If you've worked with GitHub Actions, this will feel familiar. The semantics are the same; the syntax is different.
+The execution model is a directed acyclic graph - DAG. Nodes are vertices. Dependency declarations (`needs:`) are directed edges. Skylence computes the topological sort and executes accordingly. If you've worked with GitHub Actions, this will feel familiar. The semantics are the same; the syntax is different.
 
 ## How Dependencies Work
 
@@ -37,7 +37,7 @@ In this workflow: `lint-check` and `type-check` are both independent. They run c
 
 ## Parallel Execution
 
-Skylence identifies nodes at the same "tier" — nodes whose entire dependency chain has been resolved — and starts them together. There's no explicit parallelism declaration. If nodes don't depend on each other, they run in parallel automatically.
+Skylence identifies nodes at the same "tier" - nodes whose entire dependency chain has been resolved - and starts them together. There's no explicit parallelism declaration. If nodes don't depend on each other, they run in parallel automatically.
 
 For a workflow with four independent analysis nodes, all four invoke `claude` at the same time. Total runtime is dominated by the slowest one, not the sum of all four.
 
@@ -51,14 +51,14 @@ The injected context looks like this in practice:
 
 ```
 === Output from: lint-check ===
-1. src/server.go:42 — missing error check on db.Query()
-2. src/handler.go:88 — unused variable `tmp`
+1. src/server.go:42 - missing error check on db.Query()
+2. src/handler.go:88 - unused variable `tmp`
 === End output: lint-check ===
 
 [your node's prompt follows here]
 ```
 
-Claude sees both the injected context and the node's own prompt. You don't need to reference the upstream output in your prompt text — just write the prompt as if the context is already there, because it is.
+Claude sees both the injected context and the node's own prompt. You don't need to reference the upstream output in your prompt text - just write the prompt as if the context is already there, because it is.
 
 This is how multi-step reasoning works in Skylence. `lint-check` produces a finding list. `fix-issues` receives it and applies fixes. Each node does one focused thing; composition handles the rest.
 
@@ -74,14 +74,14 @@ There is no automatic retry at the node level. If you need retry behavior, struc
 
 ## Cycle Detection
 
-`sky lint` detects cycles before any execution. A cycle means node A depends on node B which depends on node A — an infinite loop in execution order that can never be resolved.
+`sky lint` detects cycles before any execution. A cycle means node A depends on node B which depends on node A - an infinite loop in execution order that can never be resolved.
 
 ```bash
 sky lint my-workflow.sky
 # ERROR: cycle detected: fix-issues → lint-check → fix-issues
 ```
 
-This is a parse-time error. The workflow will not run until the cycle is broken. Cycles are almost always caused by copy-paste errors in `needs:` declarations — check those first.
+This is a parse-time error. The workflow will not run until the cycle is broken. Cycles are almost always caused by copy-paste errors in `needs:` declarations - check those first.
 
 ## Visualizing the Graph
 

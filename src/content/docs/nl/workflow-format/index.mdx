@@ -1,6 +1,6 @@
 ---
 title: Workflow-formaat
-description: Het .sky bestandsformaat — meta, nodes en prompts.
+description: Het .sky bestandsformaat - meta, nodes en prompts.
 sidebar:
   order: 0
 ---
@@ -15,30 +15,30 @@ Workflows staan in `.sky/workflows/*.sky` in je repository.
 
 ## Hoe een .sky-bestand is opgebouwd
 
-Een `.sky`-bestand wordt opgedeeld in secties door vier **Unicode-scheidingstekens** — gekozen omdat ze nooit voorkomen in normale code of tekst, zodat escaping niet nodig is.
+Een `.sky`-bestand wordt opgedeeld in secties door vier **Unicode-scheidingstekens** - gekozen omdat ze nooit voorkomen in normale code of tekst, zodat escaping niet nodig is.
 
 Elk scheidingsteken omsluit een benoemd blok. De naam (het **id**) is wat alles aan elkaar koppelt: `§plan§` declareert een stap, en `∆plan∆` geeft de instructies die Claude voor precies die stap leest.
 
 Er zijn vier soorten blok:
 
 <div class="sky-box sky-box-meta">
-  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="verplicht · precies één" variant="note" />
+  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> - <Badge text="verplicht · precies één" variant="note" />
   <p>De workflow-header. Definieert de naam, welke gebeurtenis hem triggert en globale instellingen (MCP-servers, budgetlimieten). Go leest dit. Claude niet.</p>
 </div>
 
 <div class="sky-box sky-box-step">
-  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> — <Badge text="één per stap" variant="caution" />
+  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> - <Badge text="één per stap" variant="caution" />
   <p>Stapconfiguratieblok. Declareert welk model te gebruiken, van welke andere stappen deze afhangt, of in een geïsoleerde worktree wordt uitgevoerd, budgetlimieten en meer. Go leest dit om de uitvoeringsgraph te bouwen. Claude ziet deze sleutels niet.</p>
 </div>
 
 <div class="sky-box sky-box-prompt">
-  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optioneel · gekoppeld via id" variant="tip" />
-  <p>Prompttekst. Dit is wat Claude daadwerkelijk leest. Gekoppeld aan zijn stap via hetzelfde id. Templatevariabelen zoals <code>{"{{issue.number}}"}</code> worden vervangen voordat Claude de tekst ziet. Geen stapconfig hier — alleen instructies.</p>
+  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> - <Badge text="optioneel · gekoppeld via id" variant="tip" />
+  <p>Prompttekst. Dit is wat Claude daadwerkelijk leest. Gekoppeld aan zijn stap via hetzelfde id. Templatevariabelen zoals <code>{"{{issue.number}}"}</code> worden vervangen voordat Claude de tekst ziet. Geen stapconfig hier - alleen instructies.</p>
 </div>
 
 <div class="sky-box" style="border-color: #94a3b8; background: #94a3b810;">
-  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> — <Badge text="optioneel · genegeerd" variant="default" />
-  <p>Docblok. Parser negeert alle inhoud tussen de twee <code>※※</code>-markeringen. Gebruik overal tussen secties om uit te leggen wat de workflow of stap doet — geen effect op uitvoering, geen tokens naar Claude.</p>
+  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> - <Badge text="optioneel · genegeerd" variant="default" />
+  <p>Docblok. Parser negeert alle inhoud tussen de twee <code>※※</code>-markeringen. Gebruik overal tussen secties om uit te leggen wat de workflow of stap doet - geen effect op uitvoering, geen tokens naar Claude.</p>
 </div>
 
 <Aside type="note" title="Uitvoeringsvolgorde komt van depends_on">
@@ -91,7 +91,7 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
 
 ## Wat elke sectie kan bevatten
 
-### <span class="sky-sym">⊕meta⊕</span> — workflow-identiteit
+### <span class="sky-sym">⊕meta⊕</span> - workflow-identiteit
 
 | Sleutel | Doel |
 |---------|------|
@@ -100,9 +100,9 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
 | `trigger.github.label` | Labelfilter (alleen issues/PR's) |
 | `trigger.github.repo` | Beperken tot specifieke repo (`owner/repo`) |
 | `max_budget_usd` | Globale budgetlimiet voor alle stappen |
-| `mcp_servers` | MCP-servermap — samengevoegd met `~/.sky/claude-env/mcp.json` |
+| `mcp_servers` | MCP-servermap - samengevoegd met `~/.sky/claude-env/mcp.json` |
 
-### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> — stapconfig
+### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> - stapconfig
 
 `key = value`-paren, één per regel. Waarden zijn JSON-strings, getallen, booleans, `null` of JSON-arrays. Regels die beginnen met `#` zijn commentaar.
 
@@ -116,18 +116,18 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
 | `loop` | object | Herhaal body totdat conditie slaagt |
 | `wait` | object | Pauzeer voor menselijke goedkeuring of webhook |
 | `depends_on` | array | Stap-ID's waarop deze stap wacht |
-| `when` | string | Conditie-expressie — sla stap over als onwaar |
+| `when` | string | Conditie-expressie - sla stap over als onwaar |
 | `model` | string | Claude-model: `sonnet`, `opus`, `haiku` |
 | `effort` | string | Claude-inspanningsniveau |
-| `isolation` | string | `worktree` — voer uit in geïsoleerde git worktree |
+| `isolation` | string | `worktree` - voer uit in geïsoleerde git worktree |
 | `max_budget_usd` | number | Maximale uitgavengrens per stap |
 | `trigger_rule` | string | `all_done` (standaard), `all_success`, `one_success`, `one_failure` |
 | `chain_from` | string | Stap-ID waarvan de Claude-sessie wordt hervat |
 | `output_format` | object | JSON-schema voor gestructureerde output |
 
-### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> — prompttekst
+### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> - prompttekst
 
-Vrije tekst. Claude leest dit letterlijk (na vervanging van templatevariabelen). Geen speciale key=value-syntaxis — alleen instructies. Kan meerdere alinea's bevatten, codeblokken, Mermaid-diagrammen of andere inhoud die Claude helpt de taak te begrijpen.
+Vrije tekst. Claude leest dit letterlijk (na vervanging van templatevariabelen). Geen speciale key=value-syntaxis - alleen instructies. Kan meerdere alinea's bevatten, codeblokken, Mermaid-diagrammen of andere inhoud die Claude helpt de taak te begrijpen.
 
 ---
 
@@ -146,8 +146,8 @@ Zeg hallo. Issuenummer is {{issue.number}} in {{repo.full_name}}.
 | Filter | Output |
 |--------|--------|
 | `{{var}}` | Ruwe waarde |
-| `{{var\|json}}` | JSON-gecodeerde waarde — gebruik in JSON-bodies zonder aanhalingstekens |
-| `{{var\|urlencode}}` | URL-gecodeerde waarde — gebruik in querystrings |
+| `{{var\|json}}` | JSON-gecodeerde waarde - gebruik in JSON-bodies zonder aanhalingstekens |
+| `{{var\|urlencode}}` | URL-gecodeerde waarde - gebruik in querystrings |
 
 `sky lint` markeert kale `{{var}}` binnen JSON-stringliterals als `SKY-WF-047`.
 

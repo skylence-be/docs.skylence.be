@@ -49,7 +49,7 @@ Config lives at `~/.sky/config.toml`.
 |-----|------|---------|-------------|
 | `port` | int | `3090` | HTTP/WebSocket listen port |
 | `host` | string | `"0.0.0.0"` | Bind address |
-| `webhook_secret` | string | — | GitHub webhook HMAC-SHA256 secret |
+| `webhook_secret` | string | - | GitHub webhook HMAC-SHA256 secret |
 
 ### `[workflow]`
 
@@ -98,13 +98,13 @@ curl http://localhost:3090/api/runs?limit=10
 ## Common Troubleshooting
 
 ```bash
-# Daemon won't start — check if already running
+# Daemon won't start - check if already running
 sky health   # if this returns 200, daemon is already up
 
 # Find the lock file
 ls -la ~/.sky/sky.lock
 
-# Lint errors — validate a specific file
+# Lint errors - validate a specific file
 sky lint path/to/workflow.sky
 
 # Check token spend this month
@@ -116,7 +116,7 @@ sky logs --run <run-id>
 # Watch live daemon output (if running in terminal)
 sky serve 2>&1 | tee ~/.sky/daemon.log
 
-# Reset the database (destructive — deletes all run history)
+# Reset the database (destructive - deletes all run history)
 rm ~/.sky/sky.db && sky setup
 ```
 

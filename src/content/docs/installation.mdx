@@ -5,7 +5,7 @@ description: Install the Skylence binary with one command. Checksum-verified, se
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Skylence ships as a single static binary called `sky`. It runs as a local daemon on your own machine — no account, no cloud.
+Skylence ships as a single static binary called `sky`. It runs as a local daemon on your own machine - no account, no cloud.
 
 ## Install
 
@@ -72,7 +72,7 @@ sky update --to v0.2.0  # pin to a specific tag (rollback or reproducible instal
 sky update -y           # install without prompting (CI, scripts)
 ```
 
-Dev builds (when `sky --version` reports `dev`) cannot self-update — install a release binary first using the installer above.
+Dev builds (when `sky --version` reports `dev`) cannot self-update - install a release binary first using the installer above.
 
 ## Uninstall
 
@@ -142,12 +142,12 @@ curl -L -O https://github.com/skylence-be/skylence/releases/latest/download/chec
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-The line for your archive should end in `OK`. If it doesn't, stop and re-download — do not run the binary.
+The line for your archive should end in `OK`. If it doesn't, stop and re-download - do not run the binary.
 
 Browse all releases at [github.com/skylence-be/skylence/releases](https://github.com/skylence-be/skylence/releases).
 
 ## What's next
 
-- [Getting Started](/getting-started/) — install `claude`, initialize the data directory, run your first workflow.
-- [CLI Reference](/cli/) — every `sky` subcommand with flags.
-- [Configuration](/configuration/) — config file, env vars, TLS, rate limits.
+- [Getting Started](/getting-started/) - install `claude`, initialize the data directory, run your first workflow.
+- [CLI Reference](/cli/) - every `sky` subcommand with flags.
+- [Configuration](/configuration/) - config file, env vars, TLS, rate limits.

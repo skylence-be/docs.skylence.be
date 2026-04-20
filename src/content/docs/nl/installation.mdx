@@ -5,7 +5,7 @@ description: Installeer de Skylence-binary met één commando. Checksum-geverifi
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Skylence wordt geleverd als één statische binary genaamd `sky`. Hij draait als lokale daemon op je eigen machine — geen account, geen cloud.
+Skylence wordt geleverd als één statische binary genaamd `sky`. Hij draait als lokale daemon op je eigen machine - geen account, geen cloud.
 
 ## Installeren
 
@@ -36,7 +36,7 @@ De installer ondersteunt macOS en Linux op zowel amd64 als arm64.
 
 ### Windows (WSL2)
 
-Native Windows wordt niet ondersteund. Installeer WSL2 en draai de Linux-binary vanuit je WSL-distro — de installer hierboven werkt as-is vanuit een WSL-shell en plaatst `sky` onder `/usr/local/bin/sky`. WSL1 wordt niet ondersteund.
+Native Windows wordt niet ondersteund. Installeer WSL2 en draai de Linux-binary vanuit je WSL-distro - de installer hierboven werkt as-is vanuit een WSL-shell en plaatst `sky` onder `/usr/local/bin/sky`. WSL1 wordt niet ondersteund.
 
 ## Zelf-update
 
@@ -49,7 +49,7 @@ sky update --to v0.2.0  # pin op een specifieke tag (rollback of reproduceerbare
 sky update -y           # installeer zonder bevestiging (CI, scripts)
 ```
 
-Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten — installeer eerst een release-binary via de installer hierboven.
+Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten - installeer eerst een release-binary via de installer hierboven.
 
 ## Verwijderen
 
@@ -119,12 +119,12 @@ curl -L -O https://github.com/skylence-be/skylence/releases/latest/download/chec
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-De regel voor jouw archief moet eindigen op `OK`. Zo niet: stop en download opnieuw — voer de binary niet uit.
+De regel voor jouw archief moet eindigen op `OK`. Zo niet: stop en download opnieuw - voer de binary niet uit.
 
 Bekijk alle releases op [github.com/skylence-be/skylence/releases](https://github.com/skylence-be/skylence/releases).
 
 ## Volgende stap
 
-- [Aan de slag](/nl/getting-started/) — installeer `claude`, initialiseer de data-map, draai je eerste workflow.
-- [CLI-referentie](/nl/cli/) — elk `sky`-subcommando met vlaggen.
-- [Configuratie](/nl/configuration/) — configuratiebestand, env vars, TLS, rate limits.
+- [Aan de slag](/nl/getting-started/) - installeer `claude`, initialiseer de data-map, draai je eerste workflow.
+- [CLI-referentie](/nl/cli/) - elk `sky`-subcommando met vlaggen.
+- [Configuratie](/nl/configuration/) - configuratiebestand, env vars, TLS, rate limits.

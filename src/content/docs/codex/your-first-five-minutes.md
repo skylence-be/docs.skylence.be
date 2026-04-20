@@ -11,7 +11,7 @@ Let's skip the theory and get you to a win. By the end of this chapter you'll ha
 
 Three things need to be true before this works:
 
-1. `sky` is installed and on your `$PATH` — if not, see the [Installation guide](/installation/)
+1. `sky` is installed and on your `$PATH` - if not, see the [Installation guide](/installation/)
 2. The `claude` CLI is installed and authenticated (`claude --version` should return without error)
 3. You have a GitHub webhook secret ready, or you're just running manually with `sky run` for now (you can add webhooks later)
 
@@ -21,7 +21,7 @@ Three things need to be true before this works:
 sky setup
 ```
 
-This checks your environment, creates `~/.sky/` if it doesn't exist, initializes the SQLite database, and prints a summary of what it found. If anything is missing it tells you exactly what to fix. Don't skip this step — `sky serve` will start without it, but you'll hit confusing errors later.
+This checks your environment, creates `~/.sky/` if it doesn't exist, initializes the SQLite database, and prints a summary of what it found. If anything is missing it tells you exactly what to fix. Don't skip this step - `sky serve` will start without it, but you'll hit confusing errors later.
 
 Expected output:
 
@@ -106,7 +106,7 @@ This lists all runs with their status, timing, and token counts.
 
 ## What Just Happened
 
-`sky run` bypassed the webhook system entirely and executed the workflow directly. That's intentional — it's how you test workflows during development, without needing a live GitHub event to trigger them.
+`sky run` bypassed the webhook system entirely and executed the workflow directly. That's intentional - it's how you test workflows during development, without needing a live GitHub event to trigger them.
 
 When you're ready to hook this up to real events, Chapter 7 covers running the daemon as a service and Chapter 3 traces what happens when a webhook arrives and a workflow runs automatically.
 

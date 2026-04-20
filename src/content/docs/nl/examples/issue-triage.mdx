@@ -13,8 +13,8 @@ Werkt het best voor repositories met een gestage stroom issues waar handmatige t
 
 ```mermaid
 flowchart TD
-    trigger["Issue labeled sky-triage"] --> classify["Classify\nHaiku — type, priority, area"]
-    classify --> label["Label and comment\nSonnet — apply GitHub labels,\npost triage summary"]
+    trigger["Issue labeled sky-triage"] --> classify["Classify\nHaiku - type, priority, area"]
+    classify --> label["Label and comment\nSonnet - apply GitHub labels,\npost triage summary"]
 ```
 
 Handig voor grote backlog zonder handmatige triage.
@@ -31,7 +31,7 @@ output_style = "terse"
 ※※
 This workflow fires when you add the "sky-triage" label to a GitHub issue.
 It automatically reads the issue title and body, determines what kind of issue it is,
-how urgent it is, and which part of the system it affects — then applies the right labels
+how urgent it is, and which part of the system it affects - then applies the right labels
 and posts a short triage comment so the issue is ready for prioritization.
 
 This is ideal for repositories that receive many issues. The "sky-triage" label can itself
@@ -78,11 +78,11 @@ Output ONLY valid JSON:
 ∆∆
 
 ※※
-STEP 1 — CLASSIFY
+STEP 1 - CLASSIFY
 A fast, cheap model (Haiku) reads the issue title and body and outputs three things:
-  type     — what kind of issue is this? (bug, feature, enhancement, question, docs, wontfix)
-  priority — how urgent? (high: blocking users, medium: friction with workaround, low: nice-to-have)
-  area     — which component or subsystem does this relate to?
+  type     - what kind of issue is this? (bug, feature, enhancement, question, docs, wontfix)
+  priority - how urgent? (high: blocking users, medium: friction with workaround, low: nice-to-have)
+  area     - which component or subsystem does this relate to?
 This takes only a fraction of a second and costs almost nothing. The result is a small
 JSON object that the next step reads to apply labels.
 ※※

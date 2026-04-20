@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Let's trace exactly what happens when a pull request opens and a workflow runs. Every step here is real — this is the actual execution path, not an abstraction.
+Let's trace exactly what happens when a pull request opens and a workflow runs. Every step here is real - this is the actual execution path, not an abstraction.
 
 ## The Execution Path
 
@@ -17,15 +17,15 @@ If the signature is valid, the event is parsed: what type of event is this (`pul
 
 ### 2. Workflow matching
 
-The daemon scans all `.sky` files it knows about — those in the directories you've configured in `~/.sky/config.toml` under `workflow_dirs`. For each file, it checks the `trigger:` block in the `⊕meta⊕` section against the incoming event.
+The daemon scans all `.sky` files it knows about - those in the directories you've configured in `~/.sky/config.toml` under `workflow_dirs`. For each file, it checks the `trigger:` block in the `⊕meta⊕` section against the incoming event.
 
-A workflow matches if the event type, repository, branch pattern, and action all satisfy the trigger conditions. Multiple workflows can match a single event — they run independently.
+A workflow matches if the event type, repository, branch pattern, and action all satisfy the trigger conditions. Multiple workflows can match a single event - they run independently.
 
 ### 3. DAG resolution
 
 The matching workflow is loaded and the node dependency graph is built. Each `§step§` declares an optional `needs:` field listing other node IDs it depends on. Skylence performs a topological sort to determine execution order.
 
-Independent nodes — those with no `needs:` relationship between them — are placed in the same execution tier and run concurrently. This matters for performance: a workflow with four independent analysis nodes doesn't run them sequentially.
+Independent nodes - those with no `needs:` relationship between them - are placed in the same execution tier and run concurrently. This matters for performance: a workflow with four independent analysis nodes doesn't run them sequentially.
 
 ### 4. Node execution
 
@@ -57,6 +57,6 @@ The lock is advisory on Linux/macOS (fcntl) and mandatory on Windows (LockFileEx
 
 ## What `sky run` Does Differently
 
-`sky run <workflow>` bypasses the webhook listener and the trigger matching entirely. It finds the named workflow file, builds the DAG, and executes it immediately. The rest of the path — node execution, streaming, storage — is identical.
+`sky run <workflow>` bypasses the webhook listener and the trigger matching entirely. It finds the named workflow file, builds the DAG, and executes it immediately. The rest of the path - node execution, streaming, storage - is identical.
 
 Use `sky run` during development. Use the webhook path in production. The workflow behavior is the same either way.

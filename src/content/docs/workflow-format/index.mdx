@@ -1,6 +1,6 @@
 ---
 title: Workflow Format
-description: The .sky file format — meta, nodes, and prompts.
+description: The .sky file format - meta, nodes, and prompts.
 sidebar:
   order: 0
 ---
@@ -15,30 +15,30 @@ Workflows live in `.sky/workflows/*.sky` in your repository.
 
 ## How a .sky file is built
 
-A `.sky` file is split into sections by four **Unicode delimiter characters** — chosen because they never appear in normal code or prose, so no escaping is needed.
+A `.sky` file is split into sections by four **Unicode delimiter characters** - chosen because they never appear in normal code or prose, so no escaping is needed.
 
 Each delimiter wraps a named block. The name (the **id**) is what ties everything together: `§plan§` declares a step, and `∆plan∆` provides the instructions Claude will read for that exact step.
 
 There are four kinds of block:
 
 <div class="sky-box sky-box-meta">
-  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> — <Badge text="required · exactly one" variant="note" />
+  <strong><span class="sky-sym">⊕</span><span class="sky-id">meta</span><span class="sky-sym">⊕</span> … <span class="sky-sym">⊕⊕</span></strong> - <Badge text="required · exactly one" variant="note" />
   <p>The workflow header. Defines the name, what event triggers it, and global settings (MCP servers, budget caps). Go reads this. Claude does not.</p>
 </div>
 
 <div class="sky-box sky-box-step">
-  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> — <Badge text="one per step" variant="caution" />
+  <strong><span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> … <span class="sky-sym">§§</span></strong> - <Badge text="one per step" variant="caution" />
   <p>Step config block. Declares what model to use, which other steps this one depends on, whether to run in an isolated worktree, spend caps, and more. Go reads this to build the execution graph. Claude does not see these keys.</p>
 </div>
 
 <div class="sky-box sky-box-prompt">
-  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> — <Badge text="optional · paired by id" variant="tip" />
-  <p>Prompt body. This is what Claude actually reads. Paired to its step by the same id. Template variables like <code>{"{{issue.number}}"}</code> are substituted before Claude sees the text. No step config here — only instructions.</p>
+  <strong><span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> … <span class="sky-sym">∆∆</span></strong> - <Badge text="optional · paired by id" variant="tip" />
+  <p>Prompt body. This is what Claude actually reads. Paired to its step by the same id. Template variables like <code>{"{{issue.number}}"}</code> are substituted before Claude sees the text. No step config here - only instructions.</p>
 </div>
 
 <div class="sky-box" style="border-color: #94a3b8; background: #94a3b810;">
-  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> — <Badge text="optional · discarded" variant="default" />
-  <p>Doc block. Parser discards all content between the two <code>※※</code> markers. Use anywhere between sections to explain what the workflow or a step does — zero effect on execution, zero tokens sent to Claude.</p>
+  <strong><span class="sky-sym">※※</span> … <span class="sky-sym">※※</span></strong> - <Badge text="optional · discarded" variant="default" />
+  <p>Doc block. Parser discards all content between the two <code>※※</code> markers. Use anywhere between sections to explain what the workflow or a step does - zero effect on execution, zero tokens sent to Claude.</p>
 </div>
 
 <Aside type="note" title="Execution order comes from depends_on">
@@ -91,7 +91,7 @@ Every opener and closer must appear **alone on its own line**.
 
 ## What each section can contain
 
-### <span class="sky-sym">⊕meta⊕</span> — workflow identity
+### <span class="sky-sym">⊕meta⊕</span> - workflow identity
 
 | Key | Purpose |
 |-----|---------|
@@ -100,9 +100,9 @@ Every opener and closer must appear **alone on its own line**.
 | `trigger.github.label` | Label filter (issues/PRs only) |
 | `trigger.github.repo` | Restrict to specific repo (`owner/repo`) |
 | `max_budget_usd` | Global spend cap across all steps |
-| `mcp_servers` | MCP server map — merged with `~/.sky/claude-env/mcp.json` |
+| `mcp_servers` | MCP server map - merged with `~/.sky/claude-env/mcp.json` |
 
-### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> — step config
+### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> - step config
 
 `key = value` pairs, one per line. Values are JSON strings, numbers, booleans, `null`, or JSON arrays. Lines starting with `#` are comments.
 
@@ -116,18 +116,18 @@ Every opener and closer must appear **alone on its own line**.
 | `loop` | object | Repeat body until condition passes |
 | `wait` | object | Pause for human approval or webhook |
 | `depends_on` | array | Step IDs this step waits for |
-| `when` | string | Condition expression — skip step if false |
+| `when` | string | Condition expression - skip step if false |
 | `model` | string | Claude model: `sonnet`, `opus`, `haiku` |
 | `effort` | string | Claude effort level |
-| `isolation` | string | `worktree` — run in isolated git worktree |
+| `isolation` | string | `worktree` - run in isolated git worktree |
 | `max_budget_usd` | number | Per-step spend cap |
 | `trigger_rule` | string | `all_done` (default), `all_success`, `one_success`, `one_failure` |
 | `chain_from` | string | Step ID whose Claude session to resume |
 | `output_format` | object | JSON schema for structured output |
 
-### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> — prompt body
+### <span class="sky-sym">∆</span><span class="sky-id">id</span><span class="sky-sym">∆</span> - prompt body
 
-Free text. Claude reads this verbatim (after template variable substitution). No special key=value syntax — just instructions. Can span multiple paragraphs, include code snippets, Mermaid diagrams, or any other content that helps Claude understand the task.
+Free text. Claude reads this verbatim (after template variable substitution). No special key=value syntax - just instructions. Can span multiple paragraphs, include code snippets, Mermaid diagrams, or any other content that helps Claude understand the task.
 
 ---
 
@@ -146,8 +146,8 @@ Say hello. Issue number is {{issue.number}} in {{repo.full_name}}.
 | Filter | Output |
 |--------|--------|
 | `{{var}}` | Raw value |
-| `{{var\|json}}` | JSON-encoded value — use inside JSON bodies without surrounding quotes |
-| `{{var\|urlencode}}` | URL-encoded value — use in query strings |
+| `{{var\|json}}` | JSON-encoded value - use inside JSON bodies without surrounding quotes |
+| `{{var\|urlencode}}` | URL-encoded value - use in query strings |
 
 `sky lint` flags bare `{{var}}` inside JSON string literals as `SKY-WF-047`.
 

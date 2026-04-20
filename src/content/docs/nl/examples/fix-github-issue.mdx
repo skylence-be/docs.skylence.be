@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Gebruik dit wanneer je wil dat Skylence een issue uit je backlog oppakt en de volledige engineeringcyclus afhandelt — het probleem begrijpen, code schrijven, tests draaien en een pull request openen — zonder dat jij iets hoeft te doen behalve een label toevoegen.
+Gebruik dit wanneer je wil dat Skylence een issue uit je backlog oppakt en de volledige engineeringcyclus afhandelt - het probleem begrijpen, code schrijven, tests draaien en een pull request openen - zonder dat jij iets hoeft te doen behalve een label toevoegen.
 
 De workflow is adaptief: hij detecteert of het issue een bug of een feature is en kiest de juiste aanpak. Bugs krijgen eerst een root-cause onderzoek. Features krijgen een implementatieplan. Beide doorlopen een meervoudige code review voordat de PR wordt aangemaakt, en kritieke bevindingen worden automatisch verholpen.
 
@@ -13,20 +13,20 @@ De workflow is adaptief: hij detecteert of het issue een bug of een feature is e
 
 ```mermaid
 flowchart TD
-    trigger["Issue labeled ready-for-sky"] --> classify["Classify\nHaiku — bug or feature?"]
-    classify -->|bug| investigate["Investigate\nOpus — trace root cause"]
-    classify -->|feature or enhancement| plan["Plan\nOpus — design solution"]
-    investigate --> implement["Implement\nOpus — write code in worktree"]
+    trigger["Issue labeled ready-for-sky"] --> classify["Classify\nHaiku - bug or feature?"]
+    classify -->|bug| investigate["Investigate\nOpus - trace root cause"]
+    classify -->|feature or enhancement| plan["Plan\nOpus - design solution"]
+    investigate --> implement["Implement\nOpus - write code in worktree"]
     plan --> implement
-    implement --> test["Test gate\nbash — make test"]
-    test --> route["Route reviews\nHaiku — analyze diff"]
+    implement --> test["Test gate\nbash - make test"]
+    test --> route["Route reviews\nHaiku - analyze diff"]
     route --> code_review["Code review\nSonnet"]
     route -->|error paths touched| error_review["Error handling\nSonnet"]
     route -->|source files changed| test_cov["Test coverage\nSonnet"]
-    code_review --> synthesize["Synthesize\nSonnet — CRITICAL / MAJOR / MINOR"]
+    code_review --> synthesize["Synthesize\nSonnet - CRITICAL / MAJOR / MINOR"]
     error_review --> synthesize
     test_cov --> synthesize
-    synthesize --> selffix["Self-fix\nOpus — fix CRITICAL and MAJOR"]
+    synthesize --> selffix["Self-fix\nOpus - fix CRITICAL and MAJOR"]
     selffix --> pr["Open draft PR\nSonnet"]
 ```
 
@@ -84,7 +84,7 @@ Output ONLY valid JSON:
 ∆∆
 
 ※※
-STEP 1 — CLASSIFY
+STEP 1 - CLASSIFY
 A fast, cheap model (Haiku) reads the issue title and body and decides what kind of
 problem this is: a bug, a feature request, an enhancement, or something else.
 This takes only a few seconds. The result routes the rest of the workflow:
@@ -101,7 +101,7 @@ when = "$classify.output.issue_type == 'bug'"
 
 ∆investigate∆
 Issue #{{issue.number}}: {{issue.title}}
-Type: bug — $classify.output.reasoning
+Type: bug - $classify.output.reasoning
 
 {{issue.body}}
 
@@ -116,7 +116,7 @@ Produce structured investigation report. No implementation yet.
 ∆∆
 
 ※※
-STEP 2a — INVESTIGATE (bugs only, skipped for features)
+STEP 2a - INVESTIGATE (bugs only, skipped for features)
 The most capable model (Opus, maximum effort) reads through the codebase and traces the
 exact path that leads to the bug: which file, which function, which line is responsible.
 No code is changed at this stage. The result is a structured report describing the root
@@ -133,7 +133,7 @@ when = "$classify.output.issue_type != 'bug'"
 
 ∆plan∆
 Issue #{{issue.number}}: {{issue.title}}
-Type: $classify.output.issue_type — $classify.output.reasoning
+Type: $classify.output.issue_type - $classify.output.reasoning
 
 {{issue.body}}
 
@@ -148,7 +148,7 @@ Produce structured plan. No implementation yet.
 ∆∆
 
 ※※
-STEP 2b — PLAN (features and enhancements only, skipped for bugs)
+STEP 2b - PLAN (features and enhancements only, skipped for bugs)
 Same powerful model, different job: instead of finding what broke, it designs what to build.
 It lists every file that needs changing and explains why, defines the test strategy, calls out
 any breaking changes, and orders all the tasks to minimize risk.
@@ -176,9 +176,9 @@ Execute:
 ∆∆
 
 ※※
-STEP 3 — IMPLEMENT
+STEP 3 - IMPLEMENT
 Opus executes the investigation report or feature plan inside a completely isolated copy of
-the codebase (a git worktree — a fresh branch that cannot affect your main branch).
+the codebase (a git worktree - a fresh branch that cannot affect your main branch).
 It makes changes file by file, runs "make test" after each group of changes, fixes any
 failures before continuing, commits everything referencing the issue number, and pushes
 the branch to GitHub when done.
@@ -190,7 +190,7 @@ depends_on = ["implement"]
 §§
 
 ※※
-STEP 4 — TEST GATE
+STEP 4 - TEST GATE
 An independent bash step runs "make test" after the implement step completes.
 This acts as a hard gate before the review phase: if tests are still failing at this
 point, the workflow catches it before spending time on multi-agent code review.
@@ -217,8 +217,8 @@ Output ONLY valid JSON:
 ∆∆
 
 ※※
-STEP 5 — ROUTE REVIEWS
-A fast Haiku model reads the actual git diff — the real lines of code that changed — and
+STEP 5 - ROUTE REVIEWS
+A fast Haiku model reads the actual git diff - the real lines of code that changed - and
 decides which of the three specialized review agents need to run.
 If nothing touched error handling, the error-handling reviewer is skipped entirely.
 If there are no source file changes, test-coverage review is skipped.
@@ -237,10 +237,10 @@ Review implementation for issue #{{issue.number}}: {{issue.title}}.
 Run `git fetch origin && git diff origin/main...HEAD`.
 
 Check:
-1. Correctness — solves issue? Off-by-one, nil dereferences, race conditions?
-2. Edge cases — what inputs or states could break this?
-3. Conventions — matches adjacent code patterns?
-4. Security — injection, path traversal, auth bypass?
+1. Correctness - solves issue? Off-by-one, nil dereferences, race conditions?
+2. Edge cases - what inputs or states could break this?
+3. Conventions - matches adjacent code patterns?
+4. Security - injection, path traversal, auth bypass?
 
 List findings: severity (critical/major/minor), file:line, what to fix.
 Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
@@ -259,7 +259,7 @@ Review error handling for issue #{{issue.number}}.
 Run `git fetch origin && git diff origin/main...HEAD`.
 
 Check:
-1. All errors handled — not silently swallowed?
+1. All errors handled - not silently swallowed?
 2. Error messages specific enough for debugging?
 3. Cleanup (defer, close, rollback) correct on all failure paths?
 
@@ -287,11 +287,11 @@ List gaps: severity, what to add/fix.
 ∆∆
 
 ※※
-STEPS 6a / 6b / 6c — PARALLEL REVIEWS
+STEPS 6a / 6b / 6c - PARALLEL REVIEWS
 Up to three Sonnet agents run simultaneously, each focused on a different dimension:
-  Code review     — correctness, edge cases, security, naming conventions
-  Error handling  — are all errors caught? are messages useful? is cleanup correct?
-  Test coverage   — are new code paths tested? are edge cases and boundaries covered?
+  Code review     - correctness, edge cases, security, naming conventions
+  Error handling  - are all errors caught? are messages useful? is cleanup correct?
+  Test coverage   - are new code paths tested? are edge cases and boundaries covered?
 Only the agents selected by the routing step actually run. All findings flow into SYNTHESIZE.
 ※※
 
@@ -313,16 +313,16 @@ Group by severity:
 - MAJOR: should fix before merging
 - MINOR: non-blocking
 
-If no issues: "LGTM — no fixes required."
+If no issues: "LGTM - no fixes required."
 ∆∆
 
 ※※
-STEP 7 — SYNTHESIZE
+STEP 7 - SYNTHESIZE
 One Sonnet call collects every finding from whichever review agents ran and organizes
 them by severity into a single consolidated report:
-  CRITICAL — must fix before this PR can be merged
-  MAJOR    — should fix before merging
-  MINOR    — non-blocking, good to address but not required
+  CRITICAL - must fix before this PR can be merged
+  MAJOR    - should fix before merging
+  MINOR    - non-blocking, good to address but not required
 ※※
 
 §self-fix§
@@ -341,11 +341,11 @@ Continue from implementation branch. Run `git fetch origin && git checkout <bran
 
 - Fix CRITICAL and MAJOR. Fix MINOR if trivial.
 - Run `make test`. Commit and push.
-- If "LGTM — no fixes required", confirm and stop.
+- If "LGTM - no fixes required", confirm and stop.
 ∆∆
 
 ※※
-STEP 8 — SELF-FIX
+STEP 8 - SELF-FIX
 Opus goes back to the implementation branch and fixes every CRITICAL and MAJOR finding
 from the review. It also fixes MINOR findings if they are trivial to address.
 After fixing it runs the test suite again, commits the fixes, and pushes.

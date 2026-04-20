@@ -5,7 +5,7 @@ sidebar:
   order: 8
 ---
 
-`sky update` fetches the latest release from GitHub, replaces the binary in place, and — if you have a service installed — bounces it so the new version is live immediately. No manual download, no moving files, no separate restart step.
+`sky update` fetches the latest release from GitHub, replaces the binary in place, and - if you have a service installed - bounces it so the new version is live immediately. No manual download, no moving files, no separate restart step.
 
 ## Basic Usage
 
@@ -61,13 +61,13 @@ Error: self-update is not available in dev builds.
 Install a release binary first: https://github.com/skylence-be/skylence/releases
 ```
 
-Dev builds (built from source with `make build`) have version `dev` baked in. The updater refuses to run on them — there's no meaningful "latest version" to compare against and replacing a dev binary with a release binary could break your development setup.
+Dev builds (built from source with `make build`) have version `dev` baked in. The updater refuses to run on them - there's no meaningful "latest version" to compare against and replacing a dev binary with a release binary could break your development setup.
 
 If you want to test `sky update` behavior, install a release binary alongside your dev build and test with the release one.
 
 ## What Gets Replaced
 
-Only the `sky` binary itself. Nothing in `~/.sky/` is touched — config, database, service markers, and run history are all preserved. The update is effectively: download new binary → atomic rename over old binary → restart service.
+Only the `sky` binary itself. Nothing in `~/.sky/` is touched - config, database, service markers, and run history are all preserved. The update is effectively: download new binary → atomic rename over old binary → restart service.
 
 If the download fails or the checksum doesn't match, the existing binary is left in place unchanged.
 
@@ -77,4 +77,4 @@ If the download fails or the checksum doesn't match, the existing binary is left
 sky update --to v0.3.0
 ```
 
-`--to` accepts any valid release tag. Use it to roll back if a new version has a regression. The same download-and-replace flow applies — it works the same whether you're going forward or backward.
+`--to` accepts any valid release tag. Use it to roll back if a new version has a regression. The same download-and-replace flow applies - it works the same whether you're going forward or backward.

@@ -1,6 +1,6 @@
 ---
 title: Skylence
-description: Claude Code Harness Builder — bouw en run Claude-workflows vanuit code.
+description: Claude Code Harness Builder - bouw en run Claude-workflows vanuit code.
 template: splash
 hero:
   tagline: Automatiseer Claude Code met gestructureerde workflows.
@@ -15,7 +15,7 @@ hero:
 
 ## Wat is Skylence?
 
-Skylence is een Claude Code **harness builder**. Je geeft het `.sky`-workflowbestanden; het bouwt en runt een harness voor elk passend GitHub-event — roept de `claude` CLI aan, streamt resultaten via WebSocket en slaat alles lokaal op.
+Skylence is een Claude Code **harness builder**. Je geeft het `.sky`-workflowbestanden; het bouwt en runt een harness voor elk passend GitHub-event - roept de `claude` CLI aan, streamt resultaten via WebSocket en slaat alles lokaal op.
 
 ```mermaid
 flowchart TB
@@ -83,17 +83,17 @@ Zo ontstond `.sky`.
 ## Hoe het werkt
 
 1. Een GitHub-event (issue gelabeld, PR geopend, …) triggert een bijpassende workflow.
-2. Skylence voert elke node in afhankelijkheidsvolgorde uit — Claude aanroepen, shellcommando's uitvoeren of HTTP-verzoeken doen.
+2. Skylence voert elke node in afhankelijkheidsvolgorde uit - Claude aanroepen, shellcommando's uitvoeren of HTTP-verzoeken doen.
 3. Elke stap wordt live gestreamd en lokaal opgeslagen. Niets verlaat je machine.
 
 ## Mogelijkheden
 
-- **Gestructureerde workflows** — definieer meerstaps-DAGs met afhankelijkheden, condities en loops in `.sky`-bestanden.
-- **Claude-native** — gebruikt `claude` CLI-sessies, MCP-configuratie en isolatievlaggen direct.
-- **Kostenbeheer** — uitgavenlimieten per node en per maand, gehandhaafd voordat Claude wordt aangeroepen.
-- **Veiligheid bij parseren** — `sky lint` detecteert injectierisico's en schemafouten voordat een workflow start.
-- **Lokaal-eerst** — geen account, geen cloud-backend. State opgeslagen in SQLite op je eigen machine.
-- **Live streaming** — run-events stromen via WebSocket naar de [sandbox.skylence.be](https://sandbox.skylence.be) SPA.
+- **Gestructureerde workflows** - definieer meerstaps-DAGs met afhankelijkheden, condities en loops in `.sky`-bestanden.
+- **Claude-native** - gebruikt `claude` CLI-sessies, MCP-configuratie en isolatievlaggen direct.
+- **Kostenbeheer** - uitgavenlimieten per node en per maand, gehandhaafd voordat Claude wordt aangeroepen.
+- **Veiligheid bij parseren** - `sky lint` detecteert injectierisico's en schemafouten voordat een workflow start.
+- **Lokaal-eerst** - geen account, geen cloud-backend. State opgeslagen in SQLite op je eigen machine.
+- **Live streaming** - run-events stromen via WebSocket naar de [sandbox.skylence.be](https://sandbox.skylence.be) SPA.
 
 ## Verder gaan
 

@@ -1,6 +1,6 @@
 ---
 title: Cost Controls & Safety
-description: Two layers of protection — lint catches structural problems before execution, runtime controls cap what Claude can spend.
+description: Two layers of protection - lint catches structural problems before execution, runtime controls cap what Claude can spend.
 sidebar:
   order: 6
 ---
@@ -9,7 +9,7 @@ Two things can go wrong with AI-driven automation: structural problems (malforme
 
 ## Layer 1: Lint (Parse Time)
 
-`sky lint` is the first gate. It runs before any execution and catches problems that would either fail at runtime or — worse — succeed with unintended behavior.
+`sky lint` is the first gate. It runs before any execution and catches problems that would either fail at runtime or - worse - succeed with unintended behavior.
 
 Run it explicitly:
 
@@ -27,7 +27,7 @@ sky lint my-workflow.sky
 
 **Cycle detection.** Dependency graph has no cycles. (See Chapter 5.)
 
-**Prompt injection risks.** Lint scans prompt content for patterns that suggest template injection — cases where variable-looking syntax in a prompt might expand to something unintended. This is a heuristic check, not a guarantee.
+**Prompt injection risks.** Lint scans prompt content for patterns that suggest template injection - cases where variable-looking syntax in a prompt might expand to something unintended. This is a heuristic check, not a guarantee.
 
 **Budget validation.** `budget_tokens` values are within the allowed range for the configured model.
 
@@ -35,11 +35,11 @@ sky lint my-workflow.sky
 
 ```bash
 $ sky lint deploy.sky
-deploy.sky:34: ERROR — node 'run-tests' references undefined node 'setup-env' in needs
-deploy.sky:61: WARNING — budget_tokens 200000 exceeds recommended limit for claude-haiku-4-5 (100000)
+deploy.sky:34: ERROR - node 'run-tests' references undefined node 'setup-env' in needs
+deploy.sky:61: WARNING - budget_tokens 200000 exceeds recommended limit for claude-haiku-4-5 (100000)
 ```
 
-Errors block execution. Warnings allow it but flag for review. Line numbers point directly to the problem — fix them and re-lint.
+Errors block execution. Warnings allow it but flag for review. Line numbers point directly to the problem - fix them and re-lint.
 
 ## Layer 2: Runtime Controls
 
@@ -85,4 +85,4 @@ Prints total spend for the current month, per-workflow breakdown, and remaining 
 
 ## The Right Habit
 
-Lint locally before you commit a workflow. The lint check in `sky run` is there as a safety net, not a development workflow. Get in the habit of `sky lint my-workflow.sky` as the last step before pushing a workflow file — same as you'd run tests before pushing code.
+Lint locally before you commit a workflow. The lint check in `sky run` is there as a safety net, not a development workflow. Get in the habit of `sky lint my-workflow.sky` as the last step before pushing a workflow file - same as you'd run tests before pushing code.

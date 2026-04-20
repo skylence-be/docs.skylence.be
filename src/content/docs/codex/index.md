@@ -1,6 +1,6 @@
 ---
 title: The .sky Codex
-description: A complete field guide to Skylence — from zero to production in 10 chapters.
+description: A complete field guide to Skylence - from zero to production in 10 chapters.
 template: splash
 sidebar:
   order: 0
@@ -20,7 +20,7 @@ Ten chapters. No fluff. By the end you'll have a running daemon, a working workf
 
 **New to Skylence?** Start at Chapter 1. Read straight through to Chapter 3 before touching any files.
 
-**Want a quick win first?** Jump to [Chapter 2 — Your First Five Minutes](/codex/your-first-five-minutes/). Get something running, then come back.
+**Want a quick win first?** Jump to [Chapter 2 - Your First Five Minutes](/codex/your-first-five-minutes/). Get something running, then come back.
 
 **Building workflows?** Chapters 4 and 5 are the core loop. Refer to Chapter 6 before you ship anything to production.
 
@@ -28,7 +28,7 @@ Ten chapters. No fluff. By the end you'll have a running daemon, a working workf
 
 ---
 
-## Part I — Foundations
+## Part I - Foundations
 
 | Chapter | What you'll learn |
 |---------|-------------------|
@@ -36,7 +36,7 @@ Ten chapters. No fluff. By the end you'll have a running daemon, a working workf
 | [2. Your First Five Minutes](/codex/your-first-five-minutes/) | Install, write a workflow, run it |
 | [3. How Skylence Actually Works](/codex/how-it-works/) | Trace a real execution from webhook to WebSocket |
 
-## Part II — The Workflow Format
+## Part II - The Workflow Format
 
 | Chapter | What you'll learn |
 |---------|-------------------|
@@ -44,14 +44,14 @@ Ten chapters. No fluff. By the end you'll have a running daemon, a working workf
 | [5. Nodes, DAGs & Dependencies](/codex/nodes-and-dags/) | Execution order, parallel runs, dependency outputs |
 | [6. Cost Controls & Safety](/codex/cost-and-safety/) | Lint checks, token budgets, spend caps |
 
-## Part III — Running in Production
+## Part III - Running in Production
 
 | Chapter | What you'll learn |
 |---------|-------------------|
 | [7. Running as a Service](/codex/running-as-a-service/) | macOS launchd, Linux systemd, Windows Scheduled Task |
 | [8. Self-Updating](/codex/self-updating/) | `sky update`, version pinning, service bouncing |
 
-## Part IV — Writing Good Workflows
+## Part IV - Writing Good Workflows
 
 | Chapter | What you'll learn |
 |---------|-------------------|

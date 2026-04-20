@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-AI coding assistants are capable but inconsistent. Give Claude the same task twice and you'll get two different approaches, two different file structures, two different scopes of change. That's not a bug in Claude — it's an inherent property of a language model responding to a prompt. The problem is that nobody agreed on what the task was.
+AI coding assistants are capable but inconsistent. Give Claude the same task twice and you'll get two different approaches, two different file structures, two different scopes of change. That's not a bug in Claude - it's an inherent property of a language model responding to a prompt. The problem is that nobody agreed on what the task was.
 
 Skylence is the agreement layer.
 
@@ -13,12 +13,12 @@ Skylence is the agreement layer.
 
 A `.sky` workflow file separates two things that most teams accidentally conflate:
 
-- **What happens** — the structure of the work: which steps run, in what order, what each step is trying to produce
-- **How the AI thinks** — the content of each step: the reasoning, the code, the decisions
+- **What happens** - the structure of the work: which steps run, in what order, what each step is trying to produce
+- **How the AI thinks** - the content of each step: the reasoning, the code, the decisions
 
 You define the structure. Claude handles the thinking. Skylence executes the plan.
 
-This means your automation is deterministic at the workflow level even though it's probabilistic at the node level. Every time a pull request is opened, the same sequence of nodes runs. `lint-check` always runs before `fix-attempt`. `write-tests` always runs after `fix-attempt`. The DAG is fixed. What Claude writes inside each node varies — but what it's trying to write, and with what context, does not.
+This means your automation is deterministic at the workflow level even though it's probabilistic at the node level. Every time a pull request is opened, the same sequence of nodes runs. `lint-check` always runs before `fix-attempt`. `write-tests` always runs after `fix-attempt`. The DAG is fixed. What Claude writes inside each node varies - but what it's trying to write, and with what context, does not.
 
 ## What the Daemon Does
 

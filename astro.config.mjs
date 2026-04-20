@@ -19,7 +19,7 @@ export default defineConfig({
             ],
             editLink: { baseUrl: 'https://github.com/skylence-be/skylence/edit/main/docs/' },
             title: 'Skylence',
-            description: 'Claude Code Harness — documentation',
+            description: 'Claude Code Harness - documentation',
             logo: {
                 src: './src/assets/logo.svg',
             },

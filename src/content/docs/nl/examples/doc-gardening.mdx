@@ -7,17 +7,17 @@ sidebar:
 
 Gebruik dit om je documentatie te controleren op veroudering zonder alles handmatig door te lezen. De workflow controleert elke doc tegen de huidige codebase en markeert drie soorten problemen: verwijzingen naar symbolen of bestanden die niet meer bestaan, kwaliteitsbeoordelingen die niet overeenkomen met de werkelijke codestatus, en uitvoeringsplannen die zijn voltooid maar niet gearchiveerd.
 
-De output is een GitHub tracking issue met een checklist — één item per verouderde doc. Als alles schoon is, wordt er geen issue geopend.
+De output is een GitHub tracking issue met een checklist - één item per verouderde doc. Als alles schoon is, wordt er geen issue geopend.
 
-Draai dit periodiek — maandelijks of na een grote refactoring.
+Draai dit periodiek - maandelijks of na een grote refactoring.
 
 **Trigger:** Voeg label `doc-garden` toe aan issue (handmatige trigger).
 
 ```mermaid
 flowchart TD
-    trigger["Issue labeled doc-garden\nmanual trigger"] --> scan["Scan\nbash — list all docs with last-commit date"]
-    scan --> inventory["Inventory\nOpus — read docs older than 90 days,\ncross-check against codebase"]
-    inventory -->|findings found| report["Report\nSonnet — open tracking issue\nwith checklist"]
+    trigger["Issue labeled doc-garden\nmanual trigger"] --> scan["Scan\nbash - list all docs with last-commit date"]
+    scan --> inventory["Inventory\nOpus - read docs older than 90 days,\ncross-check against codebase"]
+    inventory -->|findings found| report["Report\nSonnet - open tracking issue\nwith checklist"]
     inventory -->|everything clean| done["Done\nno issue opened"]
 ```
 
@@ -31,7 +31,7 @@ output_style = "terse"
 ⊕⊕
 
 ※※
-This workflow fires when you add the "doc-garden" label to any issue — it is a manual trigger
+This workflow fires when you add the "doc-garden" label to any issue - it is a manual trigger
 used for periodic maintenance, not tied to a specific event. Run it monthly or after a large
 refactor to catch documentation that has drifted out of sync with the codebase.
 
@@ -44,10 +44,10 @@ bash = "git ls-files 'docs/*.md' 'docs/**/*.md' | xargs -n1 -I F git log -1 --fo
 §§
 
 ※※
-STEP 1 — SCAN
+STEP 1 - SCAN
 A bash command lists every markdown file under docs/ along with the date it was last changed
 in git. It also lists any active execution plans and today's date.
-This produces a simple inventory of doc ages — the raw material for the next step.
+This produces a simple inventory of doc ages - the raw material for the next step.
 No AI model runs here; it is just a git command.
 ※※
 
@@ -91,29 +91,29 @@ Skip stable reference material.
 
 Output ONLY markdown findings section in exactly this format:
 
-## doc-gardening findings — <today>
+## doc-gardening findings - <today>
 
 <N> docs flagged.
 
 | file | kind | evidence | suggested-action |
 |------|------|----------|------------------|
-| docs/path.md | broken-reference | L42: cites OldFn — renamed in abc | update reference |
+| docs/path.md | broken-reference | L42: cites OldFn - renamed in abc | update reference |
 
 If zero findings:
 
-## doc-gardening findings — <today>
+## doc-gardening findings - <today>
 
-clean — no stale docs detected.
+clean - no stale docs detected.
 ∆∆
 
 ※※
-STEP 2 — INVENTORY
+STEP 2 - INVENTORY
 Opus reads every doc that has not been updated in more than 90 days. For each one it
 cross-checks the content against the current codebase, looking for four problems:
-  broken-reference  — the doc cites a function, file, or flag that no longer exists
-  outdated-grade    — a quality score or assessment no longer matches the code
-  finished-plan     — an execution plan in active/ has no remaining open tasks
-  stale-narrative   — the doc describes behavior that contradicts how the code works now
+  broken-reference  - the doc cites a function, file, or flag that no longer exists
+  outdated-grade    - a quality score or assessment no longer matches the code
+  finished-plan     - an execution plan in active/ has no remaining open tasks
+  stale-narrative   - the doc describes behavior that contradicts how the code works now
 Accurate, stable reference material (like API docs or config references) is skipped.
 The result is a structured findings table.
 ※※
@@ -129,7 +129,7 @@ Open tracking issue with findings.
 Findings: $inventory.output
 
 Steps:
-1. If "clean — no stale docs detected": print "clean" and stop. No issue.
+1. If "clean - no stale docs detected": print "clean" and stop. No issue.
 2. Extract count and date from heading.
 3. Ensure label: `gh label create doc-gardening --description "Doc staleness tracking" --color C5DEF5 2>/dev/null || true`
 4. Create issue:

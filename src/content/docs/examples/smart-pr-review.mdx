@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Use this when a pull request needs a thorough review, or when you want a second opinion before merging. The workflow reads the diff and routes it to only the review agents that apply — a docs-only change skips the code review agent entirely; a change touching error handling gets a dedicated error-handling pass on top of the standard code review.
+Use this when a pull request needs a thorough review, or when you want a second opinion before merging. The workflow reads the diff and routes it to only the review agents that apply - a docs-only change skips the code review agent entirely; a change touching error handling gets a dedicated error-handling pass on top of the standard code review.
 
 Findings are grouped by severity (CRITICAL / MAJOR / MINOR) and pushed as fixes directly onto the PR branch before you merge.
 
@@ -13,14 +13,14 @@ Findings are grouped by severity (CRITICAL / MAJOR / MINOR) and pushed as fixes 
 
 ```mermaid
 flowchart TD
-    trigger["PR labeled sky-review"] --> classify["Classify diff\nHaiku — which checks apply?"]
+    trigger["PR labeled sky-review"] --> classify["Classify diff\nHaiku - which checks apply?"]
     classify -->|run_code_review| code_review["Code review\nSonnet"]
     classify -->|run_error_handling| error_review["Error handling\nSonnet"]
     classify -->|run_test_coverage| test_cov["Test coverage\nSonnet"]
-    code_review --> synthesize["Synthesize\nSonnet — CRITICAL / MAJOR / MINOR"]
+    code_review --> synthesize["Synthesize\nSonnet - CRITICAL / MAJOR / MINOR"]
     error_review --> synthesize
     test_cov --> synthesize
-    synthesize --> fix["Fix findings\nOpus — push to PR branch"]
+    synthesize --> fix["Fix findings\nOpus - push to PR branch"]
 ```
 
 ```
@@ -36,7 +36,7 @@ output_style = "terse"
 This workflow fires when you add the "sky-review" label to a pull request.
 It reads the diff, decides which review checks actually apply, runs them in parallel,
 consolidates all findings by severity, and pushes fixes directly onto the PR branch.
-By the time it finishes, CRITICAL and MAJOR issues are already resolved — you just
+By the time it finishes, CRITICAL and MAJOR issues are already resolved - you just
 approve the PR and merge.
 ※※
 
@@ -71,7 +71,7 @@ Output ONLY valid JSON:
 ∆∆
 
 ※※
-STEP 1 — CLASSIFY
+STEP 1 - CLASSIFY
 A fast Haiku model reads the full diff of the PR and decides:
   - Should code review run? (almost always yes, unless it is docs-only)
   - Should error-handling review run? (only if the diff touches error paths)
@@ -93,10 +93,10 @@ Review PR #{{pull_request.number}}: {{pull_request.title}}
 Run `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
 
 Check:
-1. Correctness — off-by-one, nil dereferences, race conditions?
-2. Edge cases — what inputs or states could break this?
-3. Conventions — matches adjacent code patterns?
-4. Security — injection, path traversal, auth bypass?
+1. Correctness - off-by-one, nil dereferences, race conditions?
+2. Edge cases - what inputs or states could break this?
+3. Conventions - matches adjacent code patterns?
+4. Security - injection, path traversal, auth bypass?
 
 List findings: severity (critical/major/minor), file:line, what to fix.
 Conclude: LGTM, LGTM with minor fixes, or NEEDS CHANGES.
@@ -115,7 +115,7 @@ Review error handling in PR #{{pull_request.number}}.
 Run `git fetch origin && git diff origin/{{pull_request.base.ref}}...origin/{{pull_request.head.ref}}`
 
 Check:
-1. All errors handled — not silently swallowed?
+1. All errors handled - not silently swallowed?
 2. Error messages specific enough for debugging?
 3. Cleanup (defer, close, rollback) correct on all failure paths?
 4. Any error leave state inconsistent or cause panic?
@@ -144,11 +144,11 @@ List gaps: severity, what to add/fix.
 ∆∆
 
 ※※
-STEPS 2a / 2b / 2c — PARALLEL REVIEWS
+STEPS 2a / 2b / 2c - PARALLEL REVIEWS
 The selected review agents run simultaneously, each examining a different angle:
-  Code review     — is the logic correct? edge cases? security issues? conventions?
-  Error handling  — are errors handled properly? cleanup on failure paths?
-  Test coverage   — are changed code paths tested? are edge cases covered?
+  Code review     - is the logic correct? edge cases? security issues? conventions?
+  Error handling  - are errors handled properly? cleanup on failure paths?
+  Test coverage   - are changed code paths tested? are edge cases covered?
 Only the agents that were selected in step 1 run. The others are skipped.
 ※※
 
@@ -170,16 +170,16 @@ Group by severity:
 - MAJOR: should fix before merging
 - MINOR: non-blocking
 
-If no issues: "LGTM — no fixes required."
+If no issues: "LGTM - no fixes required."
 ∆∆
 
 ※※
-STEP 3 — SYNTHESIZE
+STEP 3 - SYNTHESIZE
 All findings from whichever review agents ran are collected and grouped by severity:
-  CRITICAL — must fix before merging
-  MAJOR    — should fix before merging
-  MINOR    — non-blocking improvement
-If all agents returned clean, the synthesis says "LGTM — no fixes required."
+  CRITICAL - must fix before merging
+  MAJOR    - should fix before merging
+  MINOR    - non-blocking improvement
+If all agents returned clean, the synthesis says "LGTM - no fixes required."
 ※※
 
 §fix§
@@ -197,6 +197,6 @@ Findings: $synthesize.output
 2. Fix CRITICAL and MAJOR. Fix MINOR if trivial.
 3. Run `make test`.
 4. Commit and push: `git push origin {{pull_request.head.ref}}`
-5. If "LGTM — no fixes required", confirm and stop.
+5. If "LGTM - no fixes required", confirm and stop.
 ∆∆
 ```

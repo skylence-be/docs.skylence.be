@@ -5,8 +5,8 @@ description: Install Skylence and run your first workflow.
 
 ## Prerequisites
 
-- `sky` binary — [install](/installation/) if you haven't already
-- `claude` CLI — install from [claude.com/claude-code](https://claude.com/claude-code) and complete OAuth (run `claude` once in terminal)
+- `sky` binary - [install](/installation/) if you haven't already
+- `claude` CLI - install from [claude.com/claude-code](https://claude.com/claude-code) and complete OAuth (run `claude` once in terminal)
 - A GitHub repository with a webhook pointed at your running Skylence instance
 
 ## 1. Initialize
@@ -25,7 +25,7 @@ This creates `~/.sky/` (data directory + database), seeds the managed Claude env
 sky serve
 ```
 
-The daemon binds to `127.0.0.1:3090` by default. For local development, you need a public HTTPS URL so GitHub can reach it — use a tunnel (Cloudflare, ngrok, or similar).
+The daemon binds to `127.0.0.1:3090` by default. For local development, you need a public HTTPS URL so GitHub can reach it - use a tunnel (Cloudflare, ngrok, or similar).
 
 ## 3. Register a GitHub webhook
 
@@ -86,6 +86,6 @@ sky logs
 
 ## What's next
 
-- [CLI Reference](/cli/) — every `sky` command with flags.
-- [Workflow Format](/workflow-format/) — the `.sky` format, DAG nodes, and template variables.
-- [Configuration](/configuration/) — config file, env vars, and TLS.
+- [CLI Reference](/cli/) - every `sky` command with flags.
+- [Workflow Format](/workflow-format/) - the `.sky` format, DAG nodes, and template variables.
+- [Configuration](/configuration/) - config file, env vars, and TLS.

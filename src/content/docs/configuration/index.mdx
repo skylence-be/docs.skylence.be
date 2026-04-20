@@ -50,7 +50,7 @@ update_check_on_start: true
 | `metrics_bind_addr` | `SKY_METRICS_BIND_ADDR` | |
 | `shutdown_timeout` | `SKY_SHUTDOWN_TIMEOUT` | `30` |
 | `update_check_on_start` | `SKY_UPDATE_CHECK_ON_START` | `false` |
-| `monthly_budget_usd` | — | |
+| `monthly_budget_usd` | - | |
 
 ## TLS
 
@@ -68,7 +68,7 @@ bridge_tls_key_file: "/etc/sky/tls/key.pem"
 
 ## Rate limiting
 
-Per-IP rate limiter applied independently to API, webhook, and WebSocket endpoints. It uses a token bucket — short bursts are allowed, but sustained high traffic is smoothed out. Set RPS to `0` or less to disable a limiter. Burst must be `>= 1` when RPS is positive.
+Per-IP rate limiter applied independently to API, webhook, and WebSocket endpoints. It uses a token bucket - short bursts are allowed, but sustained high traffic is smoothed out. Set RPS to `0` or less to disable a limiter. Burst must be `>= 1` when RPS is positive.
 
 ## Metrics
 

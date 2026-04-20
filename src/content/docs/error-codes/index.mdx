@@ -9,38 +9,38 @@ Every non-trivial error in Skylence has a structured code. Codes appear in logs,
 
 | Prefix | Domain |
 |--------|--------|
-| `SKY-WF-*` | Workflow — parse, validate, DAG, lint |
-| `SKY-RUN-*` | Runner — execution, steps, budget |
-| `SKY-WH-*` | Webhooks — ingress, signature, routing |
-| `SKY-DB-*` | Database — SQLite store |
-| `SKY-CL-*` | Claude CLI — subprocess, streaming |
-| `SKY-CFG-*` | Configuration — load, parse, validate |
-| `SKY-CLN-*` | Clone — git operations |
+| `SKY-WF-*` | Workflow - parse, validate, DAG, lint |
+| `SKY-RUN-*` | Runner - execution, steps, budget |
+| `SKY-WH-*` | Webhooks - ingress, signature, routing |
+| `SKY-DB-*` | Database - SQLite store |
+| `SKY-CL-*` | Claude CLI - subprocess, streaming |
+| `SKY-CFG-*` | Configuration - load, parse, validate |
+| `SKY-CLN-*` | Clone - git operations |
 | `SKY-AUTH-*` | Authentication / authorization |
-| `SKY-WS-*` | WebSocket — connections, subscriptions |
-| `SKY-API-*` | REST API — request validation |
+| `SKY-WS-*` | WebSocket - connections, subscriptions |
+| `SKY-API-*` | REST API - request validation |
 
 ---
 
-## SKY-WF — Workflow
+## SKY-WF - Workflow
 
 Raised by `sky lint` and the workflow loader. Fix these before a run starts.
 
 | Code | Meaning |
 |------|---------|
 | `SKY-WF-001` | Workflow parse failure |
-| `SKY-WF-002` | Validation failed — missing name, empty steps, etc. |
+| `SKY-WF-002` | Validation failed - missing name, empty steps, etc. |
 | `SKY-WF-003` | Workflow name not found |
 | `SKY-WF-004` | Failed to read workflow directory or file |
 | `SKY-WF-005` | DAG contains a cycle |
 | `SKY-WF-006` | Workflow has no steps or nodes |
-| `SKY-WF-007` | `.sky` section format error — unclosed delimiter, orphan prompt, nested section, malformed marker, or name collision |
+| `SKY-WF-007` | `.sky` section format error - unclosed delimiter, orphan prompt, nested section, malformed marker, or name collision |
 | `SKY-WF-010` | Command `.md` file not found in `.sky/commands/` |
 | `SKY-WF-011` | Command file parse error |
 | `SKY-WF-012` | Command file has no prompt body |
 | `SKY-WF-020` | Duplicate node ID in the workflow |
 | `SKY-WF-021` | `depends_on` references an unknown node |
-| `SKY-WF-022` | Node has no action — needs one of `prompt`, `command`, `bash`, `http`, or `eval` |
+| `SKY-WF-022` | Node has no action - needs one of `prompt`, `command`, `bash`, `http`, or `eval` |
 | `SKY-WF-023` | Node depends on itself |
 | `SKY-WF-024` | Node has more than one execution kind set |
 | `SKY-WF-030` | Invalid `$node.output` reference |
@@ -60,15 +60,15 @@ Raised by `sky lint` and the workflow loader. Fix these before a run starts.
 | `SKY-WF-044` | Workflow exceeds the maximum node count (256) |
 | `SKY-WF-045` | JSON Schema validation failure |
 | `SKY-WF-046` | `loop.max` exceeds the allowed cap |
-| `SKY-WF-047` | Bare `{{var}}` inside a JSON string literal in `http.body` — use `{{var\|json}}` instead |
-| `SKY-WF-048` | Bash sink (`eval`/`source`/`bash -c`) receives `$SKY_OUTPUT_<prompt-node>` — command injection risk |
-| `SKY-WF-049` | `mcp_servers` entry has invalid shape — missing `command`, `url`, or `type` |
+| `SKY-WF-047` | Bare `{{var}}` inside a JSON string literal in `http.body` - use `{{var\|json}}` instead |
+| `SKY-WF-048` | Bash sink (`eval`/`source`/`bash -c`) receives `$SKY_OUTPUT_<prompt-node>` - command injection risk |
+| `SKY-WF-049` | `mcp_servers` entry has invalid shape - missing `command`, `url`, or `type` |
 | `SKY-WF-050` | `mcp_servers` name collides with a managed server |
 | `SKY-WF-051` | `isolation` has an unsupported value |
 
 ---
 
-## SKY-RUN — Runner
+## SKY-RUN - Runner
 
 Raised during workflow execution.
 
@@ -80,7 +80,7 @@ Raised during workflow execution.
 | `SKY-RUN-010` | Failed to create step record |
 | `SKY-RUN-011` | Step execution failed |
 | `SKY-RUN-012` | Step exceeded its time limit |
-| `SKY-RUN-013` | Step skipped — `when` condition was false or `trigger_rule` not met |
+| `SKY-RUN-013` | Step skipped - `when` condition was false or `trigger_rule` not met |
 | `SKY-RUN-020` | DAG node execution failed |
 | `SKY-RUN-021` | DAG condition evaluation error |
 | `SKY-RUN-022` | Node skipped due to `trigger_rule` |
@@ -92,35 +92,35 @@ Raised during workflow execution.
 | `SKY-RUN-041` | Output doesn't match the `output_format` schema |
 | `SKY-RUN-050` | HTTP node request failed |
 | `SKY-RUN-051` | HTTP response status not in the expected range |
-| `SKY-RUN-060` | `eval` assertion failed — run halted |
+| `SKY-RUN-060` | `eval` assertion failed - run halted |
 | `SKY-RUN-070` | `loop` hit `max` iterations without the condition passing |
 | `SKY-RUN-080` | `wait` node timed out before receiving a resume signal |
 | `SKY-RUN-081` | Resume called but no matching `wait` node found |
 | `SKY-RUN-082` | `wait` node rejected by the approver |
 | `SKY-RUN-090` | Node cost exceeded `max_budget_usd` |
 | `SKY-RUN-091` | Workflow run cost exceeded the workflow spend cap |
-| `SKY-RUN-092` | Monthly spend cap reached — run refused before starting |
+| `SKY-RUN-092` | Monthly spend cap reached - run refused before starting |
 
 ---
 
-## SKY-WH — Webhooks
+## SKY-WH - Webhooks
 
 Raised during webhook ingress.
 
 | Code | Meaning |
 |------|---------|
-| `SKY-WH-001` | HMAC signature verification failed — check `SKY_GITHUB_SECRET` |
+| `SKY-WH-001` | HMAC signature verification failed - check `SKY_GITHUB_SECRET` |
 | `SKY-WH-002` | Payload parse error |
 | `SKY-WH-003` | Missing `X-GitHub-Event` header |
 | `SKY-WH-004` | No workflows matched this event |
 | `SKY-WH-005` | Webhook rate limit exceeded |
 | `SKY-WH-006` | Payload exceeds the size limit |
-| `SKY-WH-007` | Request timestamp too old — possible replay attack |
+| `SKY-WH-007` | Request timestamp too old - possible replay attack |
 | `SKY-WH-008` | Unsupported event type |
 
 ---
 
-## SKY-DB — Database
+## SKY-DB - Database
 
 Raised by the SQLite store.
 
@@ -133,30 +133,30 @@ Raised by the SQLite store.
 | `SKY-DB-005` | Migration failed |
 | `SKY-DB-006` | Constraint violation (unique, foreign key, etc.) |
 | `SKY-DB-007` | Database operation timed out |
-| `SKY-DB-008` | Database file corrupted — restore from backup or delete `~/.sky/sky.db` to reset |
+| `SKY-DB-008` | Database file corrupted - restore from backup or delete `~/.sky/sky.db` to reset |
 
 ---
 
-## SKY-CL — Claude CLI
+## SKY-CL - Claude CLI
 
 Raised when calling the `claude` binary.
 
 | Code | Meaning |
 |------|---------|
-| `SKY-CL-001` | `claude` binary not found in `PATH` — run `sky setup` |
+| `SKY-CL-001` | `claude` binary not found in `PATH` - run `sky setup` |
 | `SKY-CL-002` | Failed to start the `claude` process |
 | `SKY-CL-003` | Failed to parse stream-json output from `claude` |
 | `SKY-CL-004` | `claude` exited with a non-zero exit code |
 | `SKY-CL-005` | Budget limit reached inside the Claude session |
 | `SKY-CL-006` | Claude session timed out |
-| `SKY-CL-007` | Claude authentication failed — run `claude` once to re-authenticate |
-| `SKY-CL-008` | Claude API rate limited — retry after a delay |
+| `SKY-CL-007` | Claude authentication failed - run `claude` once to re-authenticate |
+| `SKY-CL-008` | Claude API rate limited - retry after a delay |
 | `SKY-CL-009` | Claude API overloaded |
-| `SKY-CL-010` | Context window exceeded — reduce prompt size or split the workflow |
+| `SKY-CL-010` | Context window exceeded - reduce prompt size or split the workflow |
 
 ---
 
-## SKY-CFG — Configuration
+## SKY-CFG - Configuration
 
 Raised at startup or when loading config.
 
@@ -165,12 +165,12 @@ Raised at startup or when loading config.
 | `SKY-CFG-001` | Failed to load `~/.sky/config.yaml` |
 | `SKY-CFG-002` | Failed to parse the config YAML |
 | `SKY-CFG-003` | Required config value missing |
-| `SKY-CFG-004` | Config value invalid — wrong type or out of range |
-| `SKY-CFG-005` | Cannot read or write the config file — check permissions |
+| `SKY-CFG-004` | Config value invalid - wrong type or out of range |
+| `SKY-CFG-005` | Cannot read or write the config file - check permissions |
 
 ---
 
-## SKY-CLN — Clone
+## SKY-CLN - Clone
 
 Raised during git clone or pull operations.
 
@@ -178,19 +178,19 @@ Raised during git clone or pull operations.
 |------|---------|
 | `SKY-CLN-001` | `git clone` failed |
 | `SKY-CLN-002` | `git pull` on an existing clone failed |
-| `SKY-CLN-003` | Git authentication failed — check token or SSH key |
+| `SKY-CLN-003` | Git authentication failed - check token or SSH key |
 | `SKY-CLN-004` | Repository not found |
 | `SKY-CLN-005` | Not enough disk space for clone |
 
 ---
 
-## SKY-AUTH — Authentication
+## SKY-AUTH - Authentication
 
 Raised by authenticated endpoints.
 
 | Code | Meaning |
 |------|---------|
-| `SKY-AUTH-001` | Authentication required — no token or session provided |
+| `SKY-AUTH-001` | Authentication required - no token or session provided |
 | `SKY-AUTH-002` | Invalid token |
 | `SKY-AUTH-003` | Authenticated but not authorized for this action |
 | `SKY-AUTH-004` | Session has expired |
@@ -198,7 +198,7 @@ Raised by authenticated endpoints.
 
 ---
 
-## SKY-WS — WebSocket
+## SKY-WS - WebSocket
 
 Raised during WebSocket connections and subscriptions.
 
@@ -209,11 +209,11 @@ Raised during WebSocket connections and subscriptions.
 | `SKY-WS-003` | WebSocket message exceeds the size limit |
 | `SKY-WS-004` | WebSocket connection closed unexpectedly |
 | `SKY-WS-005` | Malformed WebSocket message |
-| `SKY-WS-006` | Too many WebSocket connections — rate limited |
+| `SKY-WS-006` | Too many WebSocket connections - rate limited |
 
 ---
 
-## SKY-API — REST API
+## SKY-API - REST API
 
 Raised by the HTTP API layer.
 
@@ -226,4 +226,4 @@ Raised by the HTTP API layer.
 | `SKY-API-005` | Request body exceeds the size limit |
 | `SKY-API-006` | Internal server error |
 | `SKY-API-007` | Service temporarily unavailable |
-| `SKY-API-008` | Request validation failed — missing or invalid fields |
+| `SKY-API-008` | Request validation failed - missing or invalid fields |

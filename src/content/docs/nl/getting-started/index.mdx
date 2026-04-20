@@ -5,8 +5,8 @@ description: Installeer Skylence en voer je eerste workflow uit.
 
 ## Vereisten
 
-- `sky` binary — [installeer](/nl/installation/) als je dat nog niet gedaan hebt
-- `claude` CLI — installeer via [claude.com/claude-code](https://claude.com/claude-code) en voltooi OAuth (voer `claude` eenmaal uit in de terminal)
+- `sky` binary - [installeer](/nl/installation/) als je dat nog niet gedaan hebt
+- `claude` CLI - installeer via [claude.com/claude-code](https://claude.com/claude-code) en voltooi OAuth (voer `claude` eenmaal uit in de terminal)
 - Een GitHub-repository met een webhook gericht op je draaiende Skylence-instantie
 
 ## 1. Initialiseer
@@ -25,7 +25,7 @@ Dit maakt `~/.sky/` aan (datamap + database), zaait de beheerde Claude-omgeving 
 sky serve
 ```
 
-De daemon bindt standaard aan `127.0.0.1:3090`. Voor lokale ontwikkeling heb je een publieke HTTPS-URL nodig zodat GitHub het kan bereiken — gebruik een tunnel (Cloudflare, ngrok of vergelijkbaar).
+De daemon bindt standaard aan `127.0.0.1:3090`. Voor lokale ontwikkeling heb je een publieke HTTPS-URL nodig zodat GitHub het kan bereiken - gebruik een tunnel (Cloudflare, ngrok of vergelijkbaar).
 
 ## 3. Registreer een GitHub-webhook
 
@@ -86,6 +86,6 @@ sky logs
 
 ## Volgende stappen
 
-- [CLI-referentie](/nl/cli/) — alle `sky`-commando's met vlaggen.
-- [Workflow-formaat](/nl/workflow-format/) — het `.sky`-formaat, DAG-nodes en templatevariabelen.
-- [Configuratie](/nl/configuration/) — configuratiebestand, omgevingsvariabelen en TLS.
+- [CLI-referentie](/nl/cli/) - alle `sky`-commando's met vlaggen.
+- [Workflow-formaat](/nl/workflow-format/) - het `.sky`-formaat, DAG-nodes en templatevariabelen.
+- [Configuratie](/nl/configuration/) - configuratiebestand, omgevingsvariabelen en TLS.

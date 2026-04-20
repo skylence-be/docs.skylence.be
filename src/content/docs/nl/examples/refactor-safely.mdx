@@ -13,12 +13,12 @@ Handig voor het opsplitsen van grote bestanden, extraheren van packages of heror
 
 ```mermaid
 flowchart TD
-    trigger["Issue labeled sky-refactor"] --> analyze["Analyze\nOpus — read-only, map call sites and risks"]
-    analyze --> plan["Plan\nOpus — ordered structural tasks, no logic changes"]
-    plan --> execute["Execute\nOpus — move code in worktree"]
-    execute --> test["Test gate\nbash — make test and go vet"]
-    test --> verify["Verify\nSonnet — confirm no logic changes"]
-    verify --> pr["Open draft PR\nSonnet — behavior preserved"]
+    trigger["Issue labeled sky-refactor"] --> analyze["Analyze\nOpus - read-only, map call sites and risks"]
+    analyze --> plan["Plan\nOpus - ordered structural tasks, no logic changes"]
+    plan --> execute["Execute\nOpus - move code in worktree"]
+    execute --> test["Test gate\nbash - make test and go vet"]
+    test --> verify["Verify\nSonnet - confirm no logic changes"]
+    verify --> pr["Open draft PR\nSonnet - behavior preserved"]
 ```
 
 Beschrijf doelbestanden en doel in issue-inhoud vóór toevoegen label.
@@ -35,7 +35,7 @@ output_style = "terse"
 ※※
 This workflow fires when you add the "sky-refactor" label to a GitHub issue.
 It is designed for structural reorganization where you need a guarantee that behavior
-is not changed — moving files, extracting packages, splitting large modules.
+is not changed - moving files, extracting packages, splitting large modules.
 
 The workflow enforces a strict separation: analysis and planning happen in read-only mode
 before any code is touched. A dedicated verification step at the end checks that no
@@ -65,10 +65,10 @@ flowchart TD
     test --> verify[verify behavior preserved]
     verify --> pr[create draft PR]
 
-Read-only analysis — NO changes yet.
+Read-only analysis - NO changes yet.
 
 1. Identify target files and functions from request.
-2. Read each target file — understand every function, type, export.
+2. Read each target file - understand every function, type, export.
 3. Map call sites: grep for every import/usage across codebase.
 4. Identify risks: shared state, module-level side effects, exported symbols.
 5. Find existing tests for target code.
@@ -78,7 +78,7 @@ Produce structured report: target files, dependency map, risk assessment, test c
 ∆∆
 
 ※※
-STEP 1 — ANALYZE (read-only, no changes)
+STEP 1 - ANALYZE (read-only, no changes)
 Opus reads every target file thoroughly, maps every call site that imports or uses those
 symbols, identifies risks (shared state, exported APIs, module-level side effects), and
 finds the existing tests that cover this code.
@@ -99,7 +99,7 @@ Create ordered refactoring plan for issue #{{issue.number}}: {{issue.title}}
 Analysis: $analyze.output
 
 Principles:
-- No logic changes — structural reorganization only.
+- No logic changes - structural reorganization only.
 - Incremental: each step compiles and tests pass before next begins.
 - Public API preserved: exported symbols stay at same import paths.
 - No mixing with bug fixes or new features.
@@ -108,7 +108,7 @@ Produce ordered task list. Each task: specific (what to move where), independent
 ∆∆
 
 ※※
-STEP 2 — PLAN
+STEP 2 - PLAN
 Using the analysis report, Opus creates an ordered task list for the refactor.
 Each task is specific (what moves where), independent (compiles on its own), and
 verifiable (states what test output confirms it is done). The plan enforces one rule:
@@ -132,16 +132,16 @@ Rules:
 - Follow plan exactly. No extra improvements or cleanups.
 - One task at time. Complete fully before starting next.
 - Run `make test && go vet ./...` after each task. Fix failures immediately.
-- Moving code only — no logic changes.
+- Moving code only - no logic changes.
 - Commit after each task describing structural change.
 - Push on completion: `git push -u origin HEAD`.
 ∆∆
 
 ※※
-STEP 3 — EXECUTE
+STEP 3 - EXECUTE
 Opus follows the plan step by step inside an isolated worktree (a fresh branch).
 After each task it runs "make test && go vet ./..." and fixes failures before moving on.
-Moving code only — no logic improvements, no bug fixes, no cleanups beyond the scope.
+Moving code only - no logic improvements, no bug fixes, no cleanups beyond the scope.
 Commits after each task, pushes on completion.
 ※※
 
@@ -151,7 +151,7 @@ depends_on = ["execute"]
 §§
 
 ※※
-STEP 4 — TEST GATE
+STEP 4 - TEST GATE
 An independent bash step runs "make test && go vet ./..." after execute finishes.
 If anything is broken, this gate catches it before verification.
 ※※
@@ -168,7 +168,7 @@ Verify refactoring preserved exact behavior for issue #{{issue.number}}.
 Run `git fetch origin && git diff origin/main...HEAD`.
 
 Verify:
-1. New/moved files: functions match originals — no logic changes.
+1. New/moved files: functions match originals - no logic changes.
 2. Original files: re-exports exist for all previously exported symbols.
 3. Import sites updated correctly.
 4. No module-level state or side effects added or removed.
@@ -177,7 +177,7 @@ Report: BEHAVIOR PRESERVED or list logic changes found.
 ∆∆
 
 ※※
-STEP 5 — VERIFY BEHAVIOR PRESERVED
+STEP 5 - VERIFY BEHAVIOR PRESERVED
 A dedicated Sonnet pass reads the complete diff and checks for logic changes.
 It confirms: moved functions are byte-for-byte identical to originals, re-exports exist
 for all previously exported symbols, import sites are updated, no state or side effects
