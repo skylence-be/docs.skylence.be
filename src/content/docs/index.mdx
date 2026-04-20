@@ -76,6 +76,8 @@ Later I ran across [Weft](https://weavemind.ai) from WeaveMindAI, a DAG language
 
 Those three clicked. I wanted one file format that was AI-first, so Claude could author it with tight, performant prompts, but still readable enough for a human to review before it ships. Claude does not run the file itself. Skylence reads it, resolves the DAG, and shells out to the `claude` CLI for the thinking parts.
 
+Let's be honest: nobody is hand-writing these workflow files. Everyone reaches for an LLM. If the LLM is authoring it anyway, it might as well write prompts tuned for itself instead of dressed up for us. The prose between the blocks exists purely so a human can follow along and sign off before it runs.
+
 So I built `.sky`.
 
 ## How it works
