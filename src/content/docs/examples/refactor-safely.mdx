@@ -11,14 +11,15 @@ Useful for splitting large files, extracting packages, or reorganizing module bo
 
 **Trigger:** Add label `sky-refactor` to issue.
 
-**What it does:**
-
-1. **Analyze** (Opus, read-only) — maps call sites, identifies risks, proposes safe reorganization strategy. No changes.
-2. **Plan** (Opus) — ordered task list where each step compiles and passes tests before next begins.
-3. **Execute** (Opus, isolated worktree) — structural moves only, no logic changes.
-4. **Test** (bash) — runs `make test && go vet ./...`.
-5. **Verify** (Sonnet) — confirms no logic changes slipped in.
-6. **Create PR** (Sonnet) — opens draft PR noting behavior is preserved.
+```mermaid
+flowchart TD
+    trigger["Issue labeled sky-refactor"] --> analyze["Analyze\nOpus — read-only, map call sites and risks"]
+    analyze --> plan["Plan\nOpus — ordered structural tasks, no logic changes"]
+    plan --> execute["Execute\nOpus — move code in worktree"]
+    execute --> test["Test gate\nbash — make test and go vet"]
+    test --> verify["Verify\nSonnet — confirm no logic changes"]
+    verify --> pr["Open draft PR\nSonnet — behavior preserved"]
+```
 
 Describe target files and goal in issue body before adding label.
 

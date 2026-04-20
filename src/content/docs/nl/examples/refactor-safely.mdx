@@ -11,14 +11,15 @@ Handig voor het opsplitsen van grote bestanden, extraheren van packages of heror
 
 **Trigger:** Voeg label `sky-refactor` toe aan issue.
 
-**Wat het doet:**
-
-1. **Analyseer** (Opus, alleen-lezen) — brengt aanroeplocaties in kaart, identificeert risico's, stelt veilige strategie voor. Geen wijzigingen.
-2. **Plan** (Opus) — geordende takenlijst waarbij elke stap compileerbaar en testbaar is vóór volgende begint.
-3. **Voer uit** (Opus, geïsoleerde worktree) — structurele verplaatsingen alleen, geen logische wijzigingen.
-4. **Test** (bash) — draait `make test && go vet ./...`.
-5. **Verifieer** (Sonnet) — bevestigt dat geen logische wijzigingen zijn ingeslopen.
-6. **PR aanmaken** (Sonnet) — opent concept-PR met vermelding dat gedrag behouden is.
+```mermaid
+flowchart TD
+    trigger["Issue labeled sky-refactor"] --> analyze["Analyze\nOpus — read-only, map call sites and risks"]
+    analyze --> plan["Plan\nOpus — ordered structural tasks, no logic changes"]
+    plan --> execute["Execute\nOpus — move code in worktree"]
+    execute --> test["Test gate\nbash — make test and go vet"]
+    test --> verify["Verify\nSonnet — confirm no logic changes"]
+    verify --> pr["Open draft PR\nSonnet — behavior preserved"]
+```
 
 Beschrijf doelbestanden en doel in issue-inhoud vóór toevoegen label.
 

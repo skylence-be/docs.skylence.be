@@ -11,9 +11,17 @@ Als de oplossing dubbelzinnig is, geeft het de voorkeur aan de PR-branch wijzigi
 
 **Trigger:** Voeg label `sky-resolve` toe aan pull request.
 
-**Wat het doet:**
-
-1. **Oplossen** (Sonnet) — haalt laatste versie op, checkt PR-branch uit, rebaset op basis, lost elk conflict op met behoud van intentie van beide kanten, draait tests, force-pusht oplossing.
+```mermaid
+flowchart TD
+    trigger["PR labeled sky-resolve"] --> fetch["Fetch latest\ngit fetch origin"]
+    fetch --> checkout["Checkout PR branch"]
+    checkout --> rebase["Rebase onto base branch"]
+    rebase -->|conflict| read["Read both sides\npreserve intent of each"]
+    read --> cont["git rebase --continue"]
+    cont -->|more conflicts| read
+    cont -->|done| testrun["Run tests\nmake test"]
+    testrun --> push["Force-push\ngit push --force-with-lease"]
+```
 
 Eén-node workflow — taak eenvoudig genoeg voor één Sonnet-pass.
 

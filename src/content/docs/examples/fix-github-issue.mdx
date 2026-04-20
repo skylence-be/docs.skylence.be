@@ -11,16 +11,24 @@ The workflow is adaptive: it detects whether the issue is a bug or a feature and
 
 **Trigger:** Add label `ready-for-sky` to issue.
 
-**What it does:**
-
-1. **Classify** (Haiku) — determines type: bug / feature / enhancement.
-2. **Investigate or Plan** (Opus) — root-cause analysis for bugs; implementation plan for features.
-3. **Implement** (Opus, isolated worktree) — executes fix or plan, runs tests, commits, pushes.
-4. **Test** (bash) — runs `make test` as verification gate.
-5. **Review** (Haiku routes → Sonnet agents) — code review, error-handling review, test-coverage review run in parallel based on diff contents.
-6. **Synthesize** (Sonnet) — consolidates findings by severity.
-7. **Self-fix** (Opus) — fixes all CRITICAL and MAJOR findings.
-8. **Create PR** (Sonnet) — opens draft pull request.
+```mermaid
+flowchart TD
+    trigger["Issue labeled ready-for-sky"] --> classify["Classify\nHaiku — bug or feature?"]
+    classify -->|bug| investigate["Investigate\nOpus — trace root cause"]
+    classify -->|feature or enhancement| plan["Plan\nOpus — design solution"]
+    investigate --> implement["Implement\nOpus — write code in worktree"]
+    plan --> implement
+    implement --> test["Test gate\nbash — make test"]
+    test --> route["Route reviews\nHaiku — analyze diff"]
+    route --> code_review["Code review\nSonnet"]
+    route -->|error paths touched| error_review["Error handling\nSonnet"]
+    route -->|source files changed| test_cov["Test coverage\nSonnet"]
+    code_review --> synthesize["Synthesize\nSonnet — CRITICAL / MAJOR / MINOR"]
+    error_review --> synthesize
+    test_cov --> synthesize
+    synthesize --> selffix["Self-fix\nOpus — fix CRITICAL and MAJOR"]
+    selffix --> pr["Open draft PR\nSonnet"]
+```
 
 ```
 ⊕meta⊕

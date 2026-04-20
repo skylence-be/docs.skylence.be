@@ -11,10 +11,11 @@ Works best for repositories with a steady flow of issues where manual triage cre
 
 **Trigger:** Add label `sky-triage` to issue.
 
-**What it does:**
-
-1. **Classify** (Haiku) — reads title and body, outputs JSON with type, priority, area.
-2. **Label** (Sonnet) — applies GitHub labels, posts triage comment.
+```mermaid
+flowchart TD
+    trigger["Issue labeled sky-triage"] --> classify["Classify\nHaiku — type, priority, area"]
+    classify --> label["Label and comment\nSonnet — apply GitHub labels,\npost triage summary"]
+```
 
 Good for keeping large backlog organized without manual triage.
 

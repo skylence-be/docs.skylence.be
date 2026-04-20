@@ -11,13 +11,16 @@ The issue body is passed verbatim to Opus. Be specific: name files, functions, a
 
 **Trigger:** Add label `sky-implement` to issue.
 
-**What it does:**
-
-1. **Implement** (Opus, isolated worktree) — reads issue body as plan, executes each task, runs `make test` after each group.
-2. **Test** (bash) — runs `make test` as final verification gate.
-3. **Review** (Haiku routes → Sonnet agents) — adaptive review based on diff contents.
-4. **Self-fix** (Opus) — fixes all CRITICAL and MAJOR findings.
-5. **Create PR** (Sonnet) — opens draft pull request.
+```mermaid
+flowchart TD
+    trigger["Issue labeled sky-implement\nIssue body = your plan"] --> implement["Implement\nOpus — execute plan in worktree"]
+    implement --> test["Test gate\nbash — make test"]
+    test --> route["Route reviews\nHaiku — analyze diff"]
+    route --> code_review["Code review\nSonnet"]
+    code_review --> synthesize["Synthesize\nSonnet — group by severity"]
+    synthesize --> selffix["Self-fix\nOpus — fix CRITICAL and MAJOR"]
+    selffix --> pr["Open draft PR\nSonnet"]
+```
 
 Write plan in issue body before adding label. Be specific: list files, functions, changes.
 

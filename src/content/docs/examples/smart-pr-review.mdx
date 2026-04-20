@@ -11,12 +11,17 @@ Findings are grouped by severity (CRITICAL / MAJOR / MINOR) and pushed as fixes 
 
 **Trigger:** Add label `sky-review` to pull request.
 
-**What it does:**
-
-1. **Classify** (Haiku) — analyzes diff, decides which review checks apply.
-2. **Review agents** (Sonnet, parallel) — code review, error-handling review, test-coverage review run only when relevant.
-3. **Synthesize** (Sonnet) — consolidates findings by severity.
-4. **Fix** (Opus) — checks out PR branch, fixes every CRITICAL and MAJOR finding.
+```mermaid
+flowchart TD
+    trigger["PR labeled sky-review"] --> classify["Classify diff\nHaiku — which checks apply?"]
+    classify -->|run_code_review| code_review["Code review\nSonnet"]
+    classify -->|run_error_handling| error_review["Error handling\nSonnet"]
+    classify -->|run_test_coverage| test_cov["Test coverage\nSonnet"]
+    code_review --> synthesize["Synthesize\nSonnet — CRITICAL / MAJOR / MINOR"]
+    error_review --> synthesize
+    test_cov --> synthesize
+    synthesize --> fix["Fix findings\nOpus — push to PR branch"]
+```
 
 ```
 ⊕meta⊕

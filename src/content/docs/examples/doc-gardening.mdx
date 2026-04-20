@@ -13,11 +13,13 @@ Run this periodically — monthly, or after a large refactor.
 
 **Trigger:** Add label `doc-garden` to any issue (manual trigger).
 
-**What it does:**
-
-1. **Scan** (bash) — lists all docs with last-commit date.
-2. **Inventory** (Opus) — reads docs older than 90 days, cross-checks against codebase, flags broken references/outdated grades/finished plans.
-3. **Report** (Sonnet) — opens tracking issue with findings checklist, or stops if scan is clean.
+```mermaid
+flowchart TD
+    trigger["Issue labeled doc-garden\nmanual trigger"] --> scan["Scan\nbash — list all docs with last-commit date"]
+    scan --> inventory["Inventory\nOpus — read docs older than 90 days,\ncross-check against codebase"]
+    inventory -->|findings found| report["Report\nSonnet — open tracking issue\nwith checklist"]
+    inventory -->|everything clean| done["Done\nno issue opened"]
+```
 
 ```
 ⊕meta⊕
