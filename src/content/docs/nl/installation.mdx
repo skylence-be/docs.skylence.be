@@ -53,7 +53,7 @@ Sla auto-setup over met `-NoSetup`.
 
 ```powershell
 # Pin op een specifieke release
-& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Version v0.2.0
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Version v0.1.1
 
 # Installeer naar een eigen map
 & ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Dir C:\tools\sky
@@ -68,7 +68,7 @@ Eenmaal geïnstalleerd werkt `sky` zichzelf bij uit hetzelfde release-kanaal:
 ```sh
 sky update --check      # meldt of er een nieuwere release beschikbaar is
 sky update              # installeert de laatste release (met bevestiging)
-sky update --to v0.2.0  # pin op een specifieke tag (rollback of reproduceerbare install)
+sky update --to v0.1.1  # pin op een specifieke tag (rollback of reproduceerbare install)
 sky update -y           # installeer zonder bevestiging (CI, scripts)
 ```
 
