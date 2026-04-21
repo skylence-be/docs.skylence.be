@@ -9,25 +9,27 @@ description: Installeer Skylence en voer je eerste workflow uit.
 - `claude` CLI - installeer via [claude.com/claude-code](https://claude.com/claude-code) en voltooi OAuth (voer `claude` eenmaal uit in de terminal)
 - Een GitHub-repository met een webhook gericht op je draaiende Skylence-instantie
 
-## 1. Initialiseer
+## 1. Start de daemon
 
-Na het installeren van `sky`, voer je uit:
+De installer draaide `sky setup` al automatisch (tenzij je `--no-setup` / `-NoSetup` gaf), dus `~/.sky/` is geïnitialiseerd.
+
+**Aanbevolen - draai als service** (start bij inloggen, auto-restart):
 
 ```sh
-sky setup
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install-service.sh | sh
 ```
 
-Dit maakt `~/.sky/` aan (datamap + database), zaait de beheerde Claude-omgeving in, en meldt of `claude` beschikbaar is in je `PATH`.
+Windows: gebruik `install-service.ps1`. Details in [Als service draaien](/nl/installation/#als-service-draaien-auto-restart).
 
-## 2. Start de daemon
+**Handmatig - voor snelle lokale tests:**
 
 ```sh
 sky serve
 ```
 
-De daemon bindt standaard aan `127.0.0.1:3090`. Voor lokale ontwikkeling heb je een publieke HTTPS-URL nodig zodat GitHub het kan bereiken - gebruik een tunnel (Cloudflare, ngrok of vergelijkbaar).
+De daemon bindt aan `127.0.0.1:3090`. Om GitHub te laten binnenkomen, stel hem bloot via een tunnel (Cloudflare, ngrok of vergelijkbaar).
 
-## 3. Registreer een GitHub-webhook
+## 2. Registreer een GitHub-webhook
 
 Laat `sky` de webhook voor je registreren:
 
@@ -42,7 +44,7 @@ Of registreer handmatig via je repository → Instellingen → Webhooks → Webh
 - **Content type:** `application/json`
 - **Secret:** plak de waarde van `SKY_GITHUB_SECRET` uit `~/.sky/.env`
 
-## 4. Maak een workflow aan
+## 3. Maak een workflow aan
 
 Workflows staan in `.sky/workflows/*.sky` in je repository. Een minimaal voorbeeld:
 
@@ -68,7 +70,7 @@ Valideer het:
 sky lint
 ```
 
-## 5. Activeer of voer handmatig uit
+## 4. Activeer of voer handmatig uit
 
 Wanneer GitHub een event verstuurt dat overeenkomt met de trigger van de workflow, pikt `sky serve` dit automatisch op.
 

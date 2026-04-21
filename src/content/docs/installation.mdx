@@ -11,18 +11,19 @@ Skylence ships as a single static binary called `sky`. It runs as a local daemon
 
 ### macOS / Linux
 
-One command. Auto-detects your OS and architecture, verifies the checksum, installs to `/usr/local/bin/sky`.
+One command. Auto-detects your OS and architecture, verifies the checksum, installs to `/usr/local/bin/sky`, and runs `sky setup` automatically.
 
 ```sh
 curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install.sh | sh
 ```
 
-Then:
+Verify:
 
 ```sh
 sky --version
-sky setup
 ```
+
+Skip the automatic setup with `--no-setup` if you want to run it yourself later.
 
 ### Installer flags
 
@@ -42,12 +43,13 @@ The installer supports macOS and Linux on both amd64 and arm64.
 irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1 | iex
 ```
 
-Then:
+Runs `sky setup` automatically at the end. Verify:
 
 ```powershell
 sky --version
-sky setup
 ```
+
+Skip auto-setup with `-NoSetup`.
 
 #### Installer flags
 

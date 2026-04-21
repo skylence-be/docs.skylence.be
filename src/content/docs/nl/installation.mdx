@@ -9,18 +9,19 @@ Skylence wordt geleverd als één statische binary genaamd `sky`. Hij draait als
 
 ## Installeren
 
-Eén commando. Detecteert automatisch je OS en architectuur, verifieert de checksum, installeert naar `/usr/local/bin/sky`.
+Eén commando. Detecteert automatisch je OS en architectuur, verifieert de checksum, installeert naar `/usr/local/bin/sky` en draait `sky setup` automatisch.
 
 ```sh
 curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install.sh | sh
 ```
 
-Daarna:
+Controleer:
 
 ```sh
 sky --version
-sky setup
 ```
+
+Sla de automatische setup over met `--no-setup` als je die later zelf wilt draaien.
 
 ### Installer-opties
 
@@ -40,12 +41,13 @@ De installer ondersteunt macOS en Linux op zowel amd64 als arm64.
 irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1 | iex
 ```
 
-Daarna:
+Draait `sky setup` automatisch aan het einde. Controleer:
 
 ```powershell
 sky --version
-sky setup
 ```
+
+Sla auto-setup over met `-NoSetup`.
 
 #### Installer-opties
 
