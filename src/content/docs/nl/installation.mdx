@@ -34,9 +34,30 @@ curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/inst
 
 De installer ondersteunt macOS en Linux op zowel amd64 als arm64.
 
-### Windows (WSL2)
+### Windows
 
-Native Windows wordt niet ondersteund. Installeer WSL2 en draai de Linux-binary vanuit je WSL-distro - de installer hierboven werkt as-is vanuit een WSL-shell en plaatst `sky` onder `/usr/local/bin/sky`. WSL1 wordt niet ondersteund.
+```powershell
+irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1 | iex
+```
+
+Daarna:
+
+```powershell
+sky --version
+sky setup
+```
+
+#### Installer-opties
+
+```powershell
+# Pin op een specifieke release
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Version v0.2.0
+
+# Installeer naar een eigen map
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install.ps1))) -Dir C:\tools\sky
+```
+
+Vereist Windows 11 (PowerShell 5.1+). Installeert naar `%USERPROFILE%\.sky\bin\sky.exe` en voegt dat pad toe aan de user-PATH.
 
 ## Zelf-update
 
@@ -49,7 +70,44 @@ sky update --to v0.2.0  # pin op een specifieke tag (rollback of reproduceerbare
 sky update -y           # installeer zonder bevestiging (CI, scripts)
 ```
 
-Development-builds (wanneer `sky --version` `dev` rapporteert) kunnen zichzelf niet updaten - installeer eerst een release-binary via de installer hierboven.
+## Als service draaien (auto-restart)
+
+Om `sky` als achtergrondservice te draaien die bij inloggen start en automatisch herstart, gebruik de service-installer (meegeleverd met elke release). Geen `sudo` of admin nodig - alle drie platformen installeren op user-niveau.
+
+### macOS / Linux
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install-service.sh | sh
+```
+
+- **Linux**: installeert een `systemd --user` unit op `~/.config/systemd/user/sky.service` en zet linger aan zodat hij uitloggen overleeft.
+- **macOS**: schrijft een LaunchAgent naar `~/Library/LaunchAgents/be.skylence.sky.plist` met `KeepAlive` op non-zero exit.
+
+Werkmap is `~/.sky`, zodat `sky` `config.yaml` vanzelf oppikt.
+
+Verwijderen:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install-service.sh | sh -s -- --uninstall
+```
+
+### Windows
+
+```powershell
+irm https://github.com/skylence-be/skylence/releases/latest/download/install-service.ps1 | iex
+```
+
+Registreert een user-level Scheduled Task `SkylenceServer` met een `AtLogOn`-trigger en een herstart-interval van 1 minuut.
+
+Verwijderen:
+
+```powershell
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install-service.ps1))) -Uninstall
+```
+
+### Samenspel met `sky update`
+
+Zodra de service geïnstalleerd is, noteert `sky update` het wrapper-type (systemd unit / launchd label / Scheduled Task) in `~/.sky/service.json` en bounced die automatisch na een succesvolle binary-replace - geen gat waarin de oude versie nog in het geheugen zit. Uitschakelen per keer met `sky update --no-restart-service`.
 
 ## Verwijderen
 

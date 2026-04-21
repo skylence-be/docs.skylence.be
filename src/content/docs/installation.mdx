@@ -72,7 +72,44 @@ sky update --to v0.2.0  # pin to a specific tag (rollback or reproducible instal
 sky update -y           # install without prompting (CI, scripts)
 ```
 
-Dev builds (when `sky --version` reports `dev`) cannot self-update - install a release binary first using the installer above.
+## Run as a service (auto-restart)
+
+To run `sky` as a background service that starts at login and restarts automatically, use the service installer (ships with each release). No admin or `sudo` required - all three platforms install at the user level.
+
+### macOS / Linux
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install-service.sh | sh
+```
+
+- **Linux**: installs a `systemd --user` unit at `~/.config/systemd/user/sky.service` and enables linger so it survives logout.
+- **macOS**: writes a LaunchAgent at `~/Library/LaunchAgents/be.skylence.sky.plist` with `KeepAlive` on non-zero exit.
+
+Working directory is `~/.sky`, so `sky` picks up `config.yaml` naturally.
+
+Remove with:
+
+```sh
+curl -fsSL https://github.com/skylence-be/skylence/releases/latest/download/install-service.sh | sh -s -- --uninstall
+```
+
+### Windows
+
+```powershell
+irm https://github.com/skylence-be/skylence/releases/latest/download/install-service.ps1 | iex
+```
+
+Registers a user-level Scheduled Task `SkylenceServer` with an `AtLogOn` trigger and a 1-minute restart interval.
+
+Remove with:
+
+```powershell
+& ([ScriptBlock]::Create((irm https://github.com/skylence-be/skylence/releases/latest/download/install-service.ps1))) -Uninstall
+```
+
+### How it interacts with `sky update`
+
+Once the service is installed, `sky update` records the wrapper type (systemd unit / launchd label / Scheduled Task) in `~/.sky/service.json` and automatically bounces it after a successful binary replace - no "old version still in memory until restart" gap. Opt out per-invocation with `sky update --no-restart-service`.
 
 ## Uninstall
 
