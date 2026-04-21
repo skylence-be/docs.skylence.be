@@ -101,6 +101,7 @@ Elke opener en closer moet **alleen op zijn eigen regel** staan.
 | `trigger.github.repo` | Beperken tot specifieke repo (`owner/repo`) |
 | `max_budget_usd` | Globale budgetlimiet voor alle stappen |
 | `mcp_servers` | MCP-servermap - samengevoegd met `~/.sky/claude-env/mcp.json` |
+| `hooks` | Per-lifecycle tool-interceptors — zie [Hooks](#hooks) |
 
 ### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> - stapconfig
 
@@ -169,6 +170,29 @@ mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
 ```
 
 De map wordt samengevoegd met `~/.sky/claude-env/mcp.json`. Naambotsingen met beheerde servers breken de run af.
+
+---
+
+## Hooks
+
+Onderschep toolaanroepen op workflowniveau voordat ze worden uitgevoerd. Alle Claude-stappen in de workflow delen dezelfde hookconfiguratie.
+
+Geconfigureerd onder `hooks.pre_tool_use` in `⊕meta⊕`:
+
+| Sleutel | Type | Beschrijving |
+|---------|------|--------------|
+| `hooks.pre_tool_use.inject` | string | Tekst die als context wordt geïnjecteerd vóór elke toolaanroep — zichtbaar voor Claude wanneer het toolresultaat binnenkomt |
+| `hooks.pre_tool_use.deny` | array | Toolnamen om te blokkeren. Gebruik `["*"]` om alle tools te weigeren |
+
+```
+⊕meta⊕
+name = "read-only-audit"
+hooks.pre_tool_use.inject = "Gebruik altijd ripgrep in plaats van grep."
+hooks.pre_tool_use.deny = ["Bash", "Edit", "Write"]
+⊕⊕
+```
+
+`deny` heeft voorrang boven `inject`. Een geweigerde tool wordt geblokkeerd voordat hij wordt uitgevoerd — Claude ontvangt een fout en moet reageren zonder het toolresultaat.
 
 ---
 

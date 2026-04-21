@@ -101,6 +101,7 @@ Every opener and closer must appear **alone on its own line**.
 | `trigger.github.repo` | Restrict to specific repo (`owner/repo`) |
 | `max_budget_usd` | Global spend cap across all steps |
 | `mcp_servers` | MCP server map - merged with `~/.sky/claude-env/mcp.json` |
+| `hooks` | Per-lifecycle tool interceptors — see [Hooks](#hooks) |
 
 ### <span class="sky-sym">§</span><span class="sky-id">id</span><span class="sky-sym">§</span> - step config
 
@@ -169,6 +170,29 @@ mcp_servers = {"gitnexus": {"command": "npx", "args": ["gitnexus"]}}
 ```
 
 The map merges with `~/.sky/claude-env/mcp.json`. Name collisions with managed servers abort the run.
+
+---
+
+## Hooks
+
+Intercept tool calls at the workflow level before they execute. All Claude steps in the workflow share the same hook configuration.
+
+Configured under `hooks.pre_tool_use` in `⊕meta⊕`:
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `hooks.pre_tool_use.inject` | string | Text injected as context before every tool call — visible to Claude when the tool result arrives |
+| `hooks.pre_tool_use.deny` | array | Tool names to block. Use `["*"]` to deny all tools |
+
+```
+⊕meta⊕
+name = "read-only-audit"
+hooks.pre_tool_use.inject = "Always prefer ripgrep over grep."
+hooks.pre_tool_use.deny = ["Bash", "Edit", "Write"]
+⊕⊕
+```
+
+`deny` takes precedence over `inject`. A denied tool is blocked before it executes — Claude receives an error and must respond without the tool result.
 
 ---
 
